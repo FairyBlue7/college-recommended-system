@@ -3,100 +3,358 @@
 <head>
     <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
     <meta charset="UTF-8">
-    <title>用户注册</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用户注册 - 高考志愿推荐系统</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         body {
-            font-family: "Microsoft YaHei", sans-serif;
-            background-color: #f5f7fa;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            margin: 0;
+            min-height: 100vh;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            position: relative;
+            overflow: hidden;
         }
+        
+        /* 装饰性背景图案 */
+        body::before {
+            content: '';
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            background-image: 
+                radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+            animation: backgroundMove 20s ease-in-out infinite;
+        }
+        
+        @keyframes backgroundMove {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(-50px, -50px); }
+        }
+        
+        .register-container {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 420px;
+        }
+        
         .register-box {
             background: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            width: 320px;
+            padding: 2.5rem 2rem;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: slideIn 0.5s ease;
         }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .logo {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .logo-icon {
+            font-size: 3.5rem;
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+        
         h2 {
             text-align: center;
-            margin-bottom: 20px;
-            color: #333;
+            margin-bottom: 0.5rem;
+            color: #2c3e50;
+            font-size: 1.75rem;
+            font-weight: 700;
         }
-        input[type="text"], input[type="email"], input[type="password"] {
+        
+        .subtitle {
+            text-align: center;
+            color: #7f8c8d;
+            font-size: 0.9rem;
+            margin-bottom: 2rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+        
+        .input-group {
+            position: relative;
+        }
+        
+        .input-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #95a5a6;
+            font-size: 1.1rem;
+            transition: color 0.3s;
+        }
+        
+        input[type="text"], 
+        input[type="email"], 
+        input[type="password"] {
             width: 100%;
-            padding: 10px;
-            margin: 8px 0;
-            border: 1px solid #ccc;
-            border-radius: 4px;
+            padding: 0.875rem 1rem 0.875rem 2.75rem;
+            border: 2px solid #e0e6ed;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: all 0.3s;
             box-sizing: border-box;
         }
-        button {
+        
+        input[type="text"]:focus, 
+        input[type="email"]:focus,
+        input[type="password"]:focus {
+            outline: none;
+            border-color: #28a745;
+            box-shadow: 0 0 0 4px rgba(40, 167, 69, 0.1);
+        }
+        
+        input[type="text"]:focus + .input-icon,
+        input[type="email"]:focus + .input-icon,
+        input[type="password"]:focus + .input-icon {
+            color: #28a745;
+        }
+        
+        /* 密码强度指示器 */
+        .password-strength {
+            margin-top: 0.5rem;
+            height: 4px;
+            background: #e0e6ed;
+            border-radius: 2px;
+            overflow: hidden;
+            display: none;
+        }
+        
+        .password-strength-bar {
+            height: 100%;
+            width: 0%;
+            transition: all 0.3s;
+            border-radius: 2px;
+        }
+        
+        .strength-weak { 
+            width: 33.33%; 
+            background: linear-gradient(90deg, #e74c3c, #c0392b);
+        }
+        .strength-medium { 
+            width: 66.66%; 
+            background: linear-gradient(90deg, #f39c12, #e67e22);
+        }
+        .strength-strong { 
+            width: 100%; 
+            background: linear-gradient(90deg, #27ae60, #229954);
+        }
+        
+        .password-strength-text {
+            margin-top: 0.25rem;
+            font-size: 0.75rem;
+            text-align: right;
+        }
+        
+        button[type="submit"] {
             width: 100%;
-            padding: 10px;
-            background-color: #28a745;
+            padding: 0.875rem;
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
             color: white;
             border: none;
-            border-radius: 4px;
+            border-radius: 12px;
             cursor: pointer;
-            font-size: 16px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-top: 0.5rem;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.4);
         }
-        button:hover {
-            background-color: #218838;
+        
+        button[type="submit"]:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(40, 167, 69, 0.6);
         }
+        
+        button[type="submit"]:active {
+            transform: translateY(0);
+        }
+        
         .message {
-            text-align: center;
-            margin: 10px 0;
-            padding: 8px;
-            border-radius: 4px;
+            padding: 0.75rem 1rem;
+            border-radius: 10px;
+            margin-bottom: 1.25rem;
+            animation: shake 0.5s;
         }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        
         .error {
-            background-color: #f8d7da;
-            color: #721c24;
+            background-color: #fee;
+            color: #c33;
+            border-left: 4px solid #e74c3c;
         }
+        
         .success {
             background-color: #d4edda;
             color: #155724;
+            border-left: 4px solid #28a745;
         }
+        
         .link {
             text-align: center;
-            margin-top: 15px;
-            font-size: 14px;
+            margin-top: 1.5rem;
+            font-size: 0.9rem;
+            color: #7f8c8d;
         }
+        
         .link a {
-            color: #007bff;
+            color: #28a745;
             text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s;
         }
+        
         .link a:hover {
+            color: #20c997;
             text-decoration: underline;
+        }
+        
+        @media (max-width: 480px) {
+            .register-box {
+                padding: 2rem 1.5rem;
+            }
+            
+            h2 {
+                font-size: 1.5rem;
+            }
+            
+            .logo-icon {
+                font-size: 3rem;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="register-box">
-        <h2>用户注册</h2>
+    <div class="register-container">
+        <div class="register-box">
+            <div class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-user-plus"></i>
+                </div>
+            </div>
+            
+            <h2>创建账号</h2>
+            <p class="subtitle">加入高考志愿智能推荐系统</p>
 
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, msg in messages %}
-                    <div class="message {{ 'error' if category == 'error' else 'success' }}">{{ msg }}</div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, msg in messages %}
+                        <div class="message {{ 'error' if category == 'error' else 'success' }}">
+                            <i class="fas fa-{{ 'exclamation-circle' if category == 'error' else 'check-circle' }}"></i> {{ msg }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
 
-        <form method="POST">
-            <input type="text" name="username" placeholder="用户名（仅字母数字下划线）" required autofocus>
-            <input type="email" name="email" placeholder="邮箱" required>
-            <input type="password" name="password" placeholder="密码（至少6位）" required minlength="6">
-            <button type="submit">注册</button>
-        </form>
+            <form method="POST">
+                <div class="form-group">
+                    <div class="input-group">
+                        <input type="text" name="username" id="username" placeholder="用户名（仅字母数字下划线）" required autofocus>
+                        <i class="fas fa-user input-icon"></i>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <div class="input-group">
+                        <input type="email" name="email" id="email" placeholder="邮箱地址" required>
+                        <i class="fas fa-envelope input-icon"></i>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <div class="input-group">
+                        <input type="password" name="password" id="password" placeholder="密码（至少6位）" required minlength="6">
+                        <i class="fas fa-lock input-icon"></i>
+                    </div>
+                    <div class="password-strength" id="passwordStrength">
+                        <div class="password-strength-bar" id="strengthBar"></div>
+                    </div>
+                    <div class="password-strength-text" id="strengthText"></div>
+                </div>
+                
+                <button type="submit">
+                    <i class="fas fa-user-plus"></i> 立即注册
+                </button>
+            </form>
 
-        <div class="link">
-            已有账号？<a href="{{ url_for('login') }}">立即登录</a>
+            <div class="link">
+                已有账号？<a href="{{ url_for('login') }}">立即登录</a>
+            </div>
         </div>
     </div>
+    
+    <script>
+        // 密码强度检测
+        const passwordInput = document.getElementById('password');
+        const strengthBar = document.getElementById('strengthBar');
+        const strengthText = document.getElementById('strengthText');
+        const strengthContainer = document.getElementById('passwordStrength');
+        
+        passwordInput.addEventListener('input', function() {
+            const password = this.value;
+            
+            if (password.length === 0) {
+                strengthContainer.style.display = 'none';
+                strengthText.textContent = '';
+                return;
+            }
+            
+            strengthContainer.style.display = 'block';
+            
+            // 计算密码强度
+            let strength = 0;
+            if (password.length >= 6) strength++;
+            if (password.length >= 10) strength++;
+            if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength++;
+            if (/\d/.test(password)) strength++;
+            if (/[^a-zA-Z0-9]/.test(password)) strength++;
+            
+            // 移除所有强度类
+            strengthBar.classList.remove('strength-weak', 'strength-medium', 'strength-strong');
+            
+            if (strength <= 2) {
+                strengthBar.classList.add('strength-weak');
+                strengthText.textContent = '弱';
+                strengthText.style.color = '#e74c3c';
+            } else if (strength <= 3) {
+                strengthBar.classList.add('strength-medium');
+                strengthText.textContent = '中等';
+                strengthText.style.color = '#f39c12';
+            } else {
+                strengthBar.classList.add('strength-strong');
+                strengthText.textContent = '强';
+                strengthText.style.color = '#27ae60';
+            }
+        });
+    </script>
 </body>
 </html>
