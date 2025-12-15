@@ -6,6 +6,14 @@ import os
 from functools import wraps
 from contextlib import contextmanager
 import re
+from analysis import (
+    get_historical_data,
+    calculate_trend,
+    predict_rank,
+    calculate_volatility,
+    get_risk_level,
+    get_volatility_level
+)
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY') or 'dev-secret-key-change-in-production'
@@ -622,6 +630,87 @@ def delete_announcement(ann_id):
     conn.close()
     flash('公告删除成功！', 'success')
     return redirect(url_for('manage_announcements'))
+
+
+# ========================
+# 位次分析路由（新增！）
+# ========================
+
+@app.route('/analysis-page')
+@login_required
+def analysis_page():
+    """位次分析页面"""
+    return render_template('analysis.html', username=session.get('username'))
+
+
+@app.route('/api/analysis/<school>/<major>')
+@login_required
+def get_school_analysis(school, major):
+    """
+    获取学校专业的位次分析数据
+    
+    URL参数:
+        - province: 省份
+        - exam_type: 考试类型
+        - student_rank: 学生位次（可选）
+    """
+    try:
+        # 获取查询参数
+        province = request.args.get('province', '广东')
+        exam_type = request.args.get('exam_type', '物理类')
+        student_rank = request.args.get('student_rank', type=int)
+        
+        # 获取历史数据
+        historical_data = get_historical_data(school, major, province, exam_type)
+        
+        if not historical_data:
+            return jsonify({
+                'error': '未找到该学校专业的历史数据',
+                'school': school,
+                'major': major
+            }), 404
+        
+        # 提取位次和年份
+        ranks = [d['min_rank'] for d in historical_data]
+        years = [d['year'] for d in historical_data]
+        
+        # 计算趋势
+        trend, trend_description = calculate_trend(historical_data)
+        
+        # 预测位次
+        prediction = predict_rank(ranks, years)
+        
+        # 计算波动
+        volatility_value = calculate_volatility(ranks)
+        volatility = get_volatility_level(volatility_value)
+        
+        # 评估风险（如果提供了学生位次）
+        risk_assessment = None
+        if student_rank:
+            risk_assessment = get_risk_level(
+                student_rank,
+                prediction['predicted_rank'],
+                volatility_value
+            )
+        
+        return jsonify({
+            'school': school,
+            'major': major,
+            'historical_data': historical_data,
+            'trend': trend,
+            'trend_description': trend_description,
+            'predicted_rank': prediction['predicted_rank'],
+            'predicted_range': {
+                'min': prediction['min'],
+                'max': prediction['max']
+            },
+            'volatility': volatility,
+            'volatility_value': int(volatility_value),
+            'risk_assessment': risk_assessment
+        })
+        
+    except Exception as e:
+        return jsonify({'error': f'分析失败: {str(e)}'}), 500
 
 
 # ========================
