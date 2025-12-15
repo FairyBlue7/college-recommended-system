@@ -4,9 +4,11 @@ from flask import Flask, render_template, request, jsonify, redirect, url_for, s
 from werkzeug.security import generate_password_hash, check_password_hash
 import os
 from functools import wraps
+from contextlib import contextmanager
+import re
 
 app = Flask(__name__)
-app.secret_key = os.urandom(24)  # 用于 session 安全
+app.secret_key = os.environ.get('SECRET_KEY') or 'dev-secret-key-change-in-production'
 
 # ========================
 # 数据库路径
@@ -18,10 +20,32 @@ DB_PATH = 'data/admissions.db'
 # 数据库连接工具（统一入口）
 # ========================
 def get_db_connection():
-    """获取数据库连接，支持字典式访问"""
+    """
+    获取数据库连接，支持字典式访问
+    注意: 调用者负责关闭连接
+    """
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row  # 允许使用列名访问数据
     return conn
+
+
+@contextmanager
+def get_db():
+    """
+    数据库连接上下文管理器（推荐使用）
+    自动处理连接关闭，避免资源泄漏
+    
+    用法:
+        with get_db() as conn:
+            cursor = conn.cursor()
+            cursor.execute(...)
+    """
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    try:
+        yield conn
+    finally:
+        conn.close()
 
 
 # ========================
@@ -80,9 +104,20 @@ def init_database():
     )
     ''')
 
-    # 5. 插入默认管理员
+    # 5. 创建数据库索引
+    cursor.execute('''
+        CREATE INDEX IF NOT EXISTS idx_admissions_query 
+        ON admissions(province, exam_type, year)
+    ''')
+    cursor.execute('''
+        CREATE INDEX IF NOT EXISTS idx_admissions_school 
+        ON admissions(school)
+    ''')
+
+    # 6. 插入默认管理员
     try:
-        admin_hash = generate_password_hash('admin123')
+        admin_password = os.environ.get('ADMIN_PASSWORD', 'admin123')
+        admin_hash = generate_password_hash(admin_password)
         cursor.execute('''
             INSERT INTO users (username, email, password_hash, role)
             VALUES (?, ?, ?, ?)
@@ -90,7 +125,7 @@ def init_database():
     except sqlite3.IntegrityError:
         pass  # 已存在则跳过
 
-    # 6. 插入示例录取数据
+    # 7. 插入示例录取数据
     cursor.execute("SELECT COUNT(*) FROM admissions")
     if cursor.fetchone()[0] == 0:
         sample_data = [
@@ -106,7 +141,7 @@ def init_database():
             VALUES (?, ?, ?, ?, ?, ?, ?)
         ''', sample_data)
 
-    # 7. 插入测试公告
+    # 8. 插入测试公告
     cursor.execute("SELECT COUNT(*) FROM announcements")
     if cursor.fetchone()[0] == 0:
         cursor.execute('''
@@ -118,6 +153,42 @@ def init_database():
 
     conn.commit()
     conn.close()
+
+
+# ========================
+# 输入验证工具
+# ========================
+def validate_email(email: str) -> bool:
+    """验证邮箱格式"""
+    pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+    return re.match(pattern, email) is not None
+
+
+def validate_username(username: str) -> bool:
+    """验证用户名（3-20个字符，字母数字下划线）"""
+    return 3 <= len(username) <= 20 and username.replace('_', '').isalnum()
+
+
+# ========================
+# 录取概率计算
+# ========================
+def calculate_admission_probability(student_rank: int, avg_rank: float) -> int:
+    """简单的录取概率估算"""
+    if avg_rank == 0:
+        return 0
+    ratio = student_rank / avg_rank
+    if ratio < 0.85:
+        return 95
+    elif ratio < 0.95:
+        return 70
+    elif ratio < 1.05:
+        return 50
+    elif ratio < 1.15:
+        return 30
+    elif ratio < 1.3:
+        return 15
+    else:
+        return 5
 
 
 # ========================
@@ -202,12 +273,24 @@ def home():
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
-        username = request.form['username']
-        email = request.form['email']
+        username = request.form['username'].strip()
+        email = request.form['email'].strip()
         password = request.form['password']
 
         if not username or not email or not password:
             flash('所有字段必填！', 'error')
+            return render_template('register.html')
+
+        if not validate_username(username):
+            flash('用户名必须为3-20个字符，只能包含字母、数字和下划线！', 'error')
+            return render_template('register.html')
+
+        if not validate_email(email):
+            flash('邮箱格式不正确！', 'error')
+            return render_template('register.html')
+
+        if len(password) < 6:
+            flash('密码长度至少为6位！', 'error')
             return render_template('register.html')
 
         conn = get_db_connection()
@@ -320,6 +403,9 @@ def recommend_api():
 
         for rec in all_records:
             avg_rank = rec['avg_rank']
+            # 添加录取概率
+            rec['probability'] = calculate_admission_probability(student_rank, avg_rank)
+
             if lower_bound_rush <= avg_rank < upper_bound_rush:
                 recommendations['冲'].append(rec)
             elif lower_bound_safe <= avg_rank <= upper_bound_safe:
@@ -332,6 +418,8 @@ def recommend_api():
 
         return jsonify(recommendations)
 
+    except (ValueError, KeyError):
+        return jsonify({'error': '位次必须为有效的数字，且所有字段必填'}), 400
     except Exception as e:
         return jsonify({'error': f'服务器错误: {str(e)}'}), 500
 
@@ -350,7 +438,7 @@ def admin_dashboard():
     return render_template('admin.html', users=users)
 
 
-@app.route('/admin/delete/<int:user_id>')
+@app.route('/admin/delete/<int:user_id>', methods=['POST'])
 @admin_required
 def delete_user(user_id):
     if user_id == session.get('user_id'):
@@ -379,7 +467,7 @@ def delete_user(user_id):
     return redirect(url_for('admin_dashboard'))
 
 
-@app.route('/admin/toggle-admin/<int:user_id>/<action>')
+@app.route('/admin/toggle-admin/<int:user_id>/<action>', methods=['POST'])
 @admin_required
 def toggle_admin(user_id, action):
     if user_id == session.get('user_id'):
@@ -525,7 +613,7 @@ def manage_announcements():
                            username=session.get('username'))
 
 
-@app.route('/admin/delete-announcement/<int:ann_id>')
+@app.route('/admin/delete-announcement/<int:ann_id>', methods=['POST'])
 @admin_required
 def delete_announcement(ann_id):
     conn = get_db_connection()
