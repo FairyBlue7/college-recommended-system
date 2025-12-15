@@ -1,64 +1,258 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="zh-CN">
 <head>
     <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
     <meta charset="UTF-8">
-    <title>公告管理</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>公告管理 - 高考志愿推荐系统</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            background: white;
+            padding: 1.5rem 2rem;
+            border-radius: var(--radius-lg);
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow-md);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header h1 {
+            font-size: 1.75rem;
+            color: var(--primary-dark);
+            margin: 0;
+        }
+        
+        .header-actions a {
+            text-decoration: none;
+            color: var(--accent);
+            font-weight: 500;
+            margin-left: 1rem;
+            transition: color var(--transition-base);
+        }
+        
+        .header-actions a:hover {
+            color: var(--accent-hover);
+        }
+        
+        .form-section {
+            background: white;
+            padding: 2rem;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+            margin-bottom: 2rem;
+        }
+        
+        .form-section h2 {
+            font-size: 1.5rem;
+            color: var(--primary-dark);
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--gray-200);
+        }
+        
+        .checkbox-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        
+        .checkbox-wrapper input[type="checkbox"] {
+            width: 1.2rem;
+            height: 1.2rem;
+            cursor: pointer;
+        }
+        
+        .checkbox-wrapper label {
+            cursor: pointer;
+            margin: 0;
+        }
+        
+        textarea.form-control {
+            resize: vertical;
+            min-height: 120px;
+        }
+        
+        .list-section {
+            background: white;
+            padding: 2rem;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .list-section h2 {
+            font-size: 1.5rem;
+            color: var(--primary-dark);
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--gray-200);
+        }
+        
+        .table {
+            margin-top: 1rem;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 0.35rem 0.65rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-right: 0.5rem;
+        }
+        
+        .badge-pinned {
+            background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+            color: white;
+        }
+        
+        .badge-expired {
+            background: var(--gray-400);
+            color: white;
+        }
+        
+        .btn-delete {
+            background: linear-gradient(135deg, var(--danger) 0%, #c0392b 100%);
+            color: white;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 600;
+            transition: all var(--transition-base);
+        }
+        
+        .btn-delete:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(220, 53, 69, 0.4);
+        }
+        
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+        }
+    </style>
 </head>
 <body>
-<div class="container mt-4">
-    <h1>公告管理</h1>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-bullhorn"></i> 公告管理</h1>
+            <div class="header-actions">
+                <a href="{{ url_for('admin') }}">
+                    <i class="fas fa-users-cog"></i> 用户管理
+                </a>
+                <a href="{{ url_for('recommend_page') }}">
+                    <i class="fas fa-home"></i> 返回首页
+                </a>
+            </div>
+        </div>
 
-    <!-- 发布新公告 -->
-    <form method="POST" class="mb-4">
-        <div class="mb-3">
-            <label>标题</label>
-            <input type="text" name="title" class="form-control" required>
+        <!-- 发布新公告 -->
+        <div class="form-section">
+            <h2><i class="fas fa-plus-circle"></i> 发布新公告</h2>
+            <form method="POST">
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="fas fa-heading"></i> 标题
+                    </label>
+                    <input type="text" name="title" class="form-control" placeholder="输入公告标题" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="fas fa-align-left"></i> 内容
+                    </label>
+                    <textarea name="content" class="form-control" rows="6" placeholder="输入公告内容（支持HTML格式）" required></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="fas fa-calendar-times"></i> 过期时间（可选）
+                    </label>
+                    <input type="datetime-local" name="expire_time" class="form-control">
+                    <small class="help-text">留空表示永不过期</small>
+                </div>
+                
+                <div class="form-group">
+                    <div class="checkbox-wrapper">
+                        <input type="checkbox" name="is_pinned" id="is_pinned">
+                        <label for="is_pinned" class="form-label">
+                            <i class="fas fa-thumbtack"></i> 置顶显示
+                        </label>
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-paper-plane"></i> 发布公告
+                </button>
+            </form>
         </div>
-        <div class="mb-3">
-            <label>内容</label>
-            <textarea name="content" class="form-control" rows="5" required></textarea>
-        </div>
-        <div class="mb-3">
-            <label>过期时间</label>
-            <input type="datetime-local" name="expire_time" class="form-control">
-        </div>
-        <div class="mb-3 form-check">
-            <input type="checkbox" name="is_pinned" id="is_pinned" class="form-check-input">
-            <label for="is_pinned" class="form-check-label">置顶</label>
-        </div>
-        <button type="submit" class="btn btn-primary">发布</button>
-    </form>
 
-    <!-- 公告列表 -->
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>标题</th>
-                <th>发布时间</th>
-                <th>状态</th>
-                <th>操作</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for ann in announcements %}
-            <tr>
-                <td>{{ ann['title'] }}</td>
-                <td>{{ ann['create_time'][:16] }}</td>
-                <td>
-                    {% if ann['is_pinned'] %}置顶{% endif %}
-                    {% if ann['expire_time'] %}过期{% endif %}
-                </td>
-                <td>
-                    <form method="POST" action="/admin/delete-announcement/{{ ann['id'] }}" style="display:inline;" onsubmit="return confirm('确定删除公告 {{ ann[\"title\"] }} 吗？')">
-                        <button type="submit" class="btn btn-danger btn-sm">删除</button>
-                    </form>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</div>
+        <!-- 公告列表 -->
+        <div class="list-section">
+            <h2><i class="fas fa-list"></i> 已发布公告</h2>
+            {% if announcements %}
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th style="width: 40%;">标题</th>
+                            <th style="width: 20%;">发布时间</th>
+                            <th style="width: 20%;">状态</th>
+                            <th style="width: 20%;">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for ann in announcements %}
+                        <tr>
+                            <td><strong>{{ ann['title'] }}</strong></td>
+                            <td>{{ ann['create_time'][:16] }}</td>
+                            <td>
+                                {% if ann['is_pinned'] %}
+                                    <span class="badge badge-pinned">
+                                        <i class="fas fa-thumbtack"></i> 置顶
+                                    </span>
+                                {% endif %}
+                                {% if ann['expire_time'] %}
+                                    <span class="badge badge-expired">
+                                        <i class="fas fa-clock"></i> 已过期
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <form method="POST" action="/admin/delete-announcement/{{ ann['id'] }}" style="display:inline;" onsubmit="return confirm('确定删除公告「{{ ann['title'] }}」吗？')">
+                                    <button type="submit" class="btn-delete">
+                                        <i class="fas fa-trash"></i> 删除
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <div class="empty-state" style="padding: 3rem; text-align: center; color: var(--text-muted);">
+                    <i class="fas fa-inbox" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+                    <p>暂无公告</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
 </body>
 </html>
