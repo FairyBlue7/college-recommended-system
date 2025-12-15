@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>我的志愿表 - 高考志愿推荐系统</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- SortableJS for drag and drop -->
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: "Microsoft YaHei", "PingFang SC", "Helvetica Neue", Arial, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4edf5 100%);
+            color: #333;
+            line-height: 1.6;
+            padding: 15px;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        header {
+            text-align: center;
+            padding: 20px 0;
+            margin-bottom: 25px;
+        }
+        header h1 {
+            font-size: 2rem;
+            color: #1a3a6c;
+            margin-bottom: 10px;
+        }
+        .nav-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+        }
+        .nav-bar a {
+            text-decoration: none;
+            color: #3498db;
+            font-weight: 500;
+            margin: 0 10px;
+        }
+        .nav-bar a:hover {
+            color: #2980b9;
+        }
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.12);
+            overflow: hidden;
+            margin-bottom: 30px;
+        }
+        .card-header {
+            background: linear-gradient(to right, #1a3a6c, #2c5aa0);
+            color: white;
+            padding: 18px 25px;
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+        .card-body {
+            padding: 25px;
+        }
+        .category-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e9ecef;
+        }
+        .category-tab {
+            padding: 12px 24px;
+            cursor: pointer;
+            border: none;
+            background: none;
+            color: #6c757d;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+        .category-tab:hover {
+            color: #495057;
+        }
+        .category-tab.active {
+            color: #1a3a6c;
+            border-bottom-color: #1a3a6c;
+        }
+        .category-tab.rush { border-bottom-color: #e74c3c; color: #e74c3c; }
+        .category-tab.steady { border-bottom-color: #2ecc71; color: #2ecc71; }
+        .category-tab.safe { border-bottom-color: #3498db; color: #3498db; }
+        .wishlist-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        .category-column {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            min-height: 400px;
+        }
+        .column-header {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #dee2e6;
+        }
+        .rush-header { color: #e74c3c; border-bottom-color: #e74c3c; }
+        .steady-header { color: #2ecc71; border-bottom-color: #2ecc71; }
+        .safe-header { color: #3498db; border-bottom-color: #3498db; }
+        .wishlist-items {
+            min-height: 300px;
+        }
+        .wishlist-item {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+            cursor: move;
+            transition: all 0.3s;
+        }
+        .wishlist-item:hover {
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            transform: translateY(-2px);
+        }
+        .wishlist-item.sortable-ghost {
+            opacity: 0.4;
+        }
+        .item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .item-number {
+            font-weight: 700;
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+        .item-actions {
+            display: flex;
+            gap: 8px;
+        }
+        .item-actions button {
+            border: none;
+            background: none;
+            cursor: pointer;
+            color: #6c757d;
+            font-size: 0.9rem;
+            padding: 5px;
+            transition: color 0.2s;
+        }
+        .item-actions button:hover {
+            color: #495057;
+        }
+        .item-actions .delete-btn:hover {
+            color: #e74c3c;
+        }
+        .item-school {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+        .item-major {
+            color: #666;
+            margin-bottom: 8px;
+        }
+        .item-note {
+            font-size: 0.9rem;
+            color: #7f8c8d;
+            font-style: italic;
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid #ecf0f1;
+        }
+        .empty-message {
+            text-align: center;
+            padding: 40px 20px;
+            color: #95a5a6;
+        }
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn-primary {
+            background: linear-gradient(to right, #3498db, #2980b9);
+            color: white;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(52, 152, 219, 0.6);
+        }
+        .btn-secondary {
+            background: #95a5a6;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background: #7f8c8d;
+        }
+        .preview-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+        .preview-table th,
+        .preview-table td {
+            padding: 12px;
+            text-align: left;
+            border: 1px solid #dee2e6;
+        }
+        .preview-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal.show {
+            display: flex;
+        }
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .modal-header {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #2c3e50;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        .form-control {
+            width: 100%;
+            padding: 10px 12px;
+            border: 2px solid #dce4ef;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+        .form-control:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+        @media print {
+            body {
+                background: white;
+                padding: 20px;
+            }
+            .nav-bar, .action-buttons, .item-actions, header {
+                display: none;
+            }
+            .card {
+                box-shadow: none;
+                page-break-inside: avoid;
+            }
+        }
+        @media (max-width: 768px) {
+            .wishlist-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-list-check"></i> 我的志愿表</h1>
+            <p>管理你的志愿填报表，拖动调整顺序</p>
+        </header>
+
+        <div class="nav-bar">
+            <div>
+                <a href="/recommend-page"><i class="fas fa-home"></i> 返回推荐</a>
+                <a href="/analysis-page"><i class="fas fa-chart-line"></i> 位次分析</a>
+                <a href="/announcements"><i class="fas fa-bell"></i> 公告</a>
+                <a href="/profile"><i class="fas fa-user-edit"></i> 个人资料</a>
+            </div>
+            <div>
+                <span>欢迎，<strong>{{ username }}</strong></span>
+                <a href="/logout" style="color: #e74c3c; margin-left: 15px;"><i class="fas fa-sign-out-alt"></i> 退出</a>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-bookmark"></i> 志愿管理
+            </div>
+            <div class="card-body">
+                <div class="action-buttons">
+                    <button class="btn btn-primary" onclick="showPreview()">
+                        <i class="fas fa-eye"></i> 预览志愿表
+                    </button>
+                    <button class="btn btn-primary" onclick="window.print()">
+                        <i class="fas fa-print"></i> 打印志愿表
+                    </button>
+                    <button class="btn btn-secondary" onclick="loadFavorites()">
+                        <i class="fas fa-sync"></i> 刷新
+                    </button>
+                </div>
+
+                <div class="wishlist-container">
+                    <div class="category-column">
+                        <div class="column-header rush-header">
+                            <i class="fas fa-rocket"></i> 冲 (冲刺院校)
+                        </div>
+                        <div class="wishlist-items" id="rush-list" data-category="冲">
+                            <div class="empty-message">
+                                <i class="fas fa-inbox"></i><br>
+                                暂无冲刺志愿<br>
+                                <small>从推荐页面添加志愿</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="category-column">
+                        <div class="column-header steady-header">
+                            <i class="fas fa-equals"></i> 稳 (稳妥院校)
+                        </div>
+                        <div class="wishlist-items" id="steady-list" data-category="稳">
+                            <div class="empty-message">
+                                <i class="fas fa-inbox"></i><br>
+                                暂无稳妥志愿<br>
+                                <small>从推荐页面添加志愿</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="category-column">
+                        <div class="column-header safe-header">
+                            <i class="fas fa-shield-alt"></i> 保 (保底院校)
+                        </div>
+                        <div class="wishlist-items" id="safe-list" data-category="保">
+                            <div class="empty-message">
+                                <i class="fas fa-inbox"></i><br>
+                                暂无保底志愿<br>
+                                <small>从推荐页面添加志愿</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card" id="preview-card" style="display: none;">
+            <div class="card-header">
+                <i class="fas fa-file-alt"></i> 志愿表预览
+            </div>
+            <div class="card-body">
+                <h3 style="text-align: center; margin-bottom: 20px;">2025年高考志愿填报表</h3>
+                <table class="preview-table">
+                    <thead>
+                        <tr>
+                            <th>序号</th>
+                            <th>院校名称</th>
+                            <th>专业名称</th>
+                            <th>类型</th>
+                            <th>备注</th>
+                        </tr>
+                    </thead>
+                    <tbody id="preview-tbody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div class="modal" id="editModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <i class="fas fa-edit"></i> 编辑志愿
+            </div>
+            <form id="editForm">
+                <input type="hidden" id="edit-id">
+                <div class="form-group">
+                    <label for="edit-category">分类</label>
+                    <select id="edit-category" class="form-control">
+                        <option value="冲">冲</option>
+                        <option value="稳">稳</option>
+                        <option value="保">保</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="edit-note">备注</label>
+                    <textarea id="edit-note" class="form-control" rows="3" placeholder="添加备注信息..."></textarea>
+                </div>
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button type="submit" class="btn btn-primary" style="flex: 1;">
+                        <i class="fas fa-save"></i> 保存
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="closeEditModal()">
+                        <i class="fas fa-times"></i> 取消
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let favorites = [];
+        let sortableInstances = [];
+
+        // Load favorites on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadFavorites();
+        });
+
+        async function loadFavorites() {
+            try {
+                const response = await fetch('/api/favorites');
+                favorites = await response.json();
+                renderFavorites();
+                initializeSortable();
+            } catch (error) {
+                console.error('Failed to load favorites:', error);
+                alert('加载志愿失败：' + error.message);
+            }
+        }
+
+        function renderFavorites() {
+            // Clear all lists
+            ['冲', '稳', '保'].forEach(category => {
+                const listId = category === '冲' ? 'rush-list' : (category === '稳' ? 'steady-list' : 'safe-list');
+                const list = document.getElementById(listId);
+                list.innerHTML = '';
+            });
+
+            // Group by category
+            const grouped = {
+                '冲': favorites.filter(f => f.category === '冲'),
+                '稳': favorites.filter(f => f.category === '稳'),
+                '保': favorites.filter(f => f.category === '保')
+            };
+
+            // Render each category
+            Object.keys(grouped).forEach(category => {
+                const listId = category === '冲' ? 'rush-list' : (category === '稳' ? 'steady-list' : 'safe-list');
+                const list = document.getElementById(listId);
+                const items = grouped[category];
+
+                if (items.length === 0) {
+                    list.innerHTML = `
+                        <div class="empty-message">
+                            <i class="fas fa-inbox"></i><br>
+                            暂无${category}类志愿<br>
+                            <small>从推荐页面添加志愿</small>
+                        </div>
+                    `;
+                } else {
+                    items.forEach((item, index) => {
+                        const itemDiv = document.createElement('div');
+                        itemDiv.className = 'wishlist-item';
+                        itemDiv.dataset.id = item.id;
+                        itemDiv.innerHTML = `
+                            <div class="item-header">
+                                <span class="item-number">#${index + 1}</span>
+                                <div class="item-actions">
+                                    <button onclick="editItem(${item.id})" title="编辑">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="delete-btn" onclick="deleteItem(${item.id})" title="删除">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="item-school">${item.school}</div>
+                            <div class="item-major">${item.major}</div>
+                            ${item.note ? `<div class="item-note">${item.note}</div>` : ''}
+                        `;
+                        list.appendChild(itemDiv);
+                    });
+                }
+            });
+        }
+
+        function initializeSortable() {
+            // Destroy existing instances
+            sortableInstances.forEach(instance => instance.destroy());
+            sortableInstances = [];
+
+            // Create new sortable instances
+            ['rush-list', 'steady-list', 'safe-list'].forEach(listId => {
+                const list = document.getElementById(listId);
+                const sortable = new Sortable(list, {
+                    group: 'wishlist',
+                    animation: 150,
+                    ghostClass: 'sortable-ghost',
+                    onEnd: function(evt) {
+                        handleDrop(evt);
+                    }
+                });
+                sortableInstances.push(sortable);
+            });
+        }
+
+        async function handleDrop(evt) {
+            const itemId = parseInt(evt.item.dataset.id);
+            const newCategory = evt.to.dataset.category;
+            const oldCategory = evt.from.dataset.category;
+
+            // Update category if moved to different column
+            if (newCategory !== oldCategory) {
+                try {
+                    await fetch(`/api/favorites/${itemId}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ category: newCategory })
+                    });
+                } catch (error) {
+                    console.error('Failed to update category:', error);
+                    alert('更新分类失败');
+                    loadFavorites(); // Reload to revert
+                    return;
+                }
+            }
+
+            // Update sort order
+            await updateSortOrder();
+        }
+
+        async function updateSortOrder() {
+            // Collect all items in order
+            const orderedIds = [];
+            ['rush-list', 'steady-list', 'safe-list'].forEach(listId => {
+                const list = document.getElementById(listId);
+                const items = list.querySelectorAll('.wishlist-item');
+                items.forEach(item => {
+                    orderedIds.push(parseInt(item.dataset.id));
+                });
+            });
+
+            try {
+                await fetch('/api/favorites/reorder', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ordered_ids: orderedIds })
+                });
+                loadFavorites(); // Reload to update numbers
+            } catch (error) {
+                console.error('Failed to reorder:', error);
+                alert('更新排序失败');
+            }
+        }
+
+        async function deleteItem(id) {
+            if (!confirm('确定要删除这个志愿吗？')) {
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/favorites', {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: id })
+                });
+
+                if (response.ok) {
+                    loadFavorites();
+                } else {
+                    const data = await response.json();
+                    alert(data.error || '删除失败');
+                }
+            } catch (error) {
+                console.error('Failed to delete:', error);
+                alert('删除失败：' + error.message);
+            }
+        }
+
+        function editItem(id) {
+            const item = favorites.find(f => f.id === id);
+            if (!item) return;
+
+            document.getElementById('edit-id').value = item.id;
+            document.getElementById('edit-category').value = item.category;
+            document.getElementById('edit-note').value = item.note || '';
+            document.getElementById('editModal').classList.add('show');
+        }
+
+        function closeEditModal() {
+            document.getElementById('editModal').classList.remove('show');
+        }
+
+        document.getElementById('editForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const id = document.getElementById('edit-id').value;
+            const category = document.getElementById('edit-category').value;
+            const note = document.getElementById('edit-note').value;
+
+            try {
+                const response = await fetch(`/api/favorites/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ category, note })
+                });
+
+                if (response.ok) {
+                    closeEditModal();
+                    loadFavorites();
+                } else {
+                    const data = await response.json();
+                    alert(data.error || '更新失败');
+                }
+            } catch (error) {
+                console.error('Failed to update:', error);
+                alert('更新失败：' + error.message);
+            }
+        });
+
+        function showPreview() {
+            const previewCard = document.getElementById('preview-card');
+            const tbody = document.getElementById('preview-tbody');
+            
+            tbody.innerHTML = '';
+            let index = 1;
+
+            ['冲', '稳', '保'].forEach(category => {
+                const items = favorites.filter(f => f.category === category);
+                items.forEach(item => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${index++}</td>
+                        <td>${item.school}</td>
+                        <td>${item.major}</td>
+                        <td>${item.category}</td>
+                        <td>${item.note || '-'}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            });
+
+            previewCard.style.display = 'block';
+            previewCard.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('editModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeEditModal();
+            }
+        });
+    </script>
+</body>
+</html>

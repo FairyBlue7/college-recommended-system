@@ -112,7 +112,23 @@ def init_database():
     )
     ''')
 
-    # 5. 创建数据库索引
+    # 5. 创建志愿收藏表（新增！）
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS user_favorites (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        school TEXT NOT NULL,
+        major TEXT NOT NULL,
+        category TEXT DEFAULT '稳',
+        sort_order INTEGER DEFAULT 0,
+        note TEXT,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+        UNIQUE(user_id, school, major)
+    )
+    ''')
+
+    # 6. 创建数据库索引
     cursor.execute('''
         CREATE INDEX IF NOT EXISTS idx_admissions_query 
         ON admissions(province, exam_type, year)
@@ -121,8 +137,12 @@ def init_database():
         CREATE INDEX IF NOT EXISTS idx_admissions_school 
         ON admissions(school)
     ''')
+    cursor.execute('''
+        CREATE INDEX IF NOT EXISTS idx_favorites_user
+        ON user_favorites(user_id)
+    ''')
 
-    # 6. 插入默认管理员
+    # 7. 插入默认管理员
     try:
         admin_password = os.environ.get('ADMIN_PASSWORD', 'admin123')
         admin_hash = generate_password_hash(admin_password)
@@ -133,7 +153,7 @@ def init_database():
     except sqlite3.IntegrityError:
         pass  # 已存在则跳过
 
-    # 7. 插入示例录取数据
+    # 8. 插入示例录取数据
     cursor.execute("SELECT COUNT(*) FROM admissions")
     if cursor.fetchone()[0] == 0:
         sample_data = [
@@ -149,7 +169,7 @@ def init_database():
             VALUES (?, ?, ?, ?, ?, ?, ?)
         ''', sample_data)
 
-    # 8. 插入测试公告
+    # 9. 插入测试公告
     cursor.execute("SELECT COUNT(*) FROM announcements")
     if cursor.fetchone()[0] == 0:
         cursor.execute('''
@@ -711,6 +731,196 @@ def get_school_analysis(school, major):
         
     except Exception as e:
         return jsonify({'error': f'分析失败: {str(e)}'}), 500
+
+
+# ========================
+# 志愿表管理路由（新增！）
+# ========================
+
+@app.route('/wishlist')
+@login_required
+def wishlist_page():
+    """志愿表管理页面"""
+    return render_template('wishlist.html', username=session.get('username'))
+
+
+@app.route('/api/favorites', methods=['GET', 'POST', 'DELETE'])
+@login_required
+def manage_favorites():
+    """管理志愿收藏"""
+    user_id = session['user_id']
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    if request.method == 'GET':
+        # 获取用户的所有收藏
+        cursor.execute('''
+            SELECT id, school, major, category, sort_order, note, created_at
+            FROM user_favorites
+            WHERE user_id = ?
+            ORDER BY sort_order ASC, created_at DESC
+        ''', (user_id,))
+        favorites = cursor.fetchall()
+        conn.close()
+        
+        result = []
+        for fav in favorites:
+            result.append({
+                'id': fav['id'],
+                'school': fav['school'],
+                'major': fav['major'],
+                'category': fav['category'],
+                'sort_order': fav['sort_order'],
+                'note': fav['note'],
+                'created_at': fav['created_at']
+            })
+        
+        return jsonify(result)
+    
+    elif request.method == 'POST':
+        # 添加收藏
+        data = request.get_json()
+        school = data.get('school', '').strip()
+        major = data.get('major', '').strip()
+        category = data.get('category', '稳')
+        note = data.get('note', '')
+        
+        if not school or not major:
+            return jsonify({'error': '学校和专业不能为空'}), 400
+        
+        if category not in ['冲', '稳', '保']:
+            category = '稳'
+        
+        try:
+            # 获取当前最大排序号
+            cursor.execute('''
+                SELECT COALESCE(MAX(sort_order), 0) + 1 as next_order
+                FROM user_favorites
+                WHERE user_id = ?
+            ''', (user_id,))
+            next_order = cursor.fetchone()['next_order']
+            
+            cursor.execute('''
+                INSERT INTO user_favorites (user_id, school, major, category, sort_order, note)
+                VALUES (?, ?, ?, ?, ?, ?)
+            ''', (user_id, school, major, category, next_order, note))
+            conn.commit()
+            
+            # 返回新创建的收藏
+            fav_id = cursor.lastrowid
+            conn.close()
+            
+            return jsonify({
+                'success': True,
+                'message': '添加成功',
+                'id': fav_id
+            })
+        except sqlite3.IntegrityError:
+            conn.close()
+            return jsonify({'error': '该志愿已存在'}), 400
+    
+    elif request.method == 'DELETE':
+        # 删除收藏
+        data = request.get_json()
+        fav_id = data.get('id')
+        
+        if not fav_id:
+            return jsonify({'error': 'ID不能为空'}), 400
+        
+        cursor.execute('''
+            DELETE FROM user_favorites
+            WHERE id = ? AND user_id = ?
+        ''', (fav_id, user_id))
+        
+        if cursor.rowcount == 0:
+            conn.close()
+            return jsonify({'error': '志愿不存在或无权删除'}), 404
+        
+        conn.commit()
+        conn.close()
+        
+        return jsonify({'success': True, 'message': '删除成功'})
+
+
+@app.route('/api/favorites/reorder', methods=['POST'])
+@login_required
+def reorder_favorites():
+    """调整志愿顺序"""
+    user_id = session['user_id']
+    data = request.get_json()
+    ordered_ids = data.get('ordered_ids', [])
+    
+    if not ordered_ids:
+        return jsonify({'error': '顺序列表不能为空'}), 400
+    
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        # 更新排序
+        for index, fav_id in enumerate(ordered_ids):
+            cursor.execute('''
+                UPDATE user_favorites
+                SET sort_order = ?
+                WHERE id = ? AND user_id = ?
+            ''', (index, fav_id, user_id))
+        
+        conn.commit()
+        conn.close()
+        
+        return jsonify({'success': True, 'message': '排序更新成功'})
+    except Exception as e:
+        conn.close()
+        return jsonify({'error': f'排序失败: {str(e)}'}), 500
+
+
+@app.route('/api/favorites/<int:fav_id>', methods=['PUT'])
+@login_required
+def update_favorite(fav_id):
+    """更新志愿（修改分类或备注）"""
+    user_id = session['user_id']
+    data = request.get_json()
+    
+    category = data.get('category')
+    note = data.get('note')
+    
+    if not category and note is None:
+        return jsonify({'error': '至少需要提供一个更新字段'}), 400
+    
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    # 构建动态更新SQL
+    updates = []
+    params = []
+    
+    if category:
+        if category not in ['冲', '稳', '保']:
+            conn.close()
+            return jsonify({'error': '无效的分类'}), 400
+        updates.append('category = ?')
+        params.append(category)
+    
+    if note is not None:
+        updates.append('note = ?')
+        params.append(note)
+    
+    params.extend([fav_id, user_id])
+    
+    cursor.execute(f'''
+        UPDATE user_favorites
+        SET {', '.join(updates)}
+        WHERE id = ? AND user_id = ?
+    ''', params)
+    
+    if cursor.rowcount == 0:
+        conn.close()
+        return jsonify({'error': '志愿不存在或无权修改'}), 404
+    
+    conn.commit()
+    conn.close()
+    
+    return jsonify({'success': True, 'message': '更新成功'})
 
 
 # ========================
