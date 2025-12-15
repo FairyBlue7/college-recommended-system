@@ -492,22 +492,48 @@
                         const itemDiv = document.createElement('div');
                         itemDiv.className = 'wishlist-item';
                         itemDiv.dataset.id = item.id;
-                        itemDiv.innerHTML = `
-                            <div class="item-header">
-                                <span class="item-number">#${index + 1}</span>
-                                <div class="item-actions">
-                                    <button onclick="editItem(${item.id})" title="编辑">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                    <button class="delete-btn" onclick="deleteItem(${item.id})" title="删除">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="item-school">${item.school}</div>
-                            <div class="item-major">${item.major}</div>
-                            ${item.note ? `<div class="item-note">${item.note}</div>` : ''}
+                        
+                        // Create elements safely to prevent XSS
+                        const header = document.createElement('div');
+                        header.className = 'item-header';
+                        
+                        const number = document.createElement('span');
+                        number.className = 'item-number';
+                        number.textContent = '#' + (index + 1);
+                        
+                        const actions = document.createElement('div');
+                        actions.className = 'item-actions';
+                        actions.innerHTML = `
+                            <button onclick="editItem(${item.id})" title="编辑">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="delete-btn" onclick="deleteItem(${item.id})" title="删除">
+                                <i class="fas fa-trash"></i>
+                            </button>
                         `;
+                        
+                        header.appendChild(number);
+                        header.appendChild(actions);
+                        
+                        const school = document.createElement('div');
+                        school.className = 'item-school';
+                        school.textContent = item.school;
+                        
+                        const major = document.createElement('div');
+                        major.className = 'item-major';
+                        major.textContent = item.major;
+                        
+                        itemDiv.appendChild(header);
+                        itemDiv.appendChild(school);
+                        itemDiv.appendChild(major);
+                        
+                        if (item.note) {
+                            const note = document.createElement('div');
+                            note.className = 'item-note';
+                            note.textContent = item.note;
+                            itemDiv.appendChild(note);
+                        }
+                        
                         list.appendChild(itemDiv);
                     });
                 }
@@ -659,13 +685,29 @@
                 const items = favorites.filter(f => f.category === category);
                 items.forEach(item => {
                     const tr = document.createElement('tr');
-                    tr.innerHTML = `
-                        <td>${index++}</td>
-                        <td>${item.school}</td>
-                        <td>${item.major}</td>
-                        <td>${item.category}</td>
-                        <td>${item.note || '-'}</td>
-                    `;
+                    
+                    // Create cells safely
+                    const td1 = document.createElement('td');
+                    td1.textContent = index++;
+                    
+                    const td2 = document.createElement('td');
+                    td2.textContent = item.school;
+                    
+                    const td3 = document.createElement('td');
+                    td3.textContent = item.major;
+                    
+                    const td4 = document.createElement('td');
+                    td4.textContent = item.category;
+                    
+                    const td5 = document.createElement('td');
+                    td5.textContent = item.note || '-';
+                    
+                    tr.appendChild(td1);
+                    tr.appendChild(td2);
+                    tr.appendChild(td3);
+                    tr.appendChild(td4);
+                    tr.appendChild(td5);
+                    
                     tbody.appendChild(tr);
                 });
             });

@@ -690,15 +690,14 @@ def get_school_analysis(school, major):
                 'major': major
             }), 404
         
-        # 提取位次和年份
+        # 提取位次
         ranks = [d['min_rank'] for d in historical_data]
-        years = [d['year'] for d in historical_data]
         
         # 计算趋势
         trend, trend_description = calculate_trend(historical_data)
         
         # 预测位次
-        prediction = predict_rank(ranks, years)
+        prediction = predict_rank(ranks)
         
         # 计算波动
         volatility_value = calculate_volatility(ranks)
@@ -890,28 +889,34 @@ def update_favorite(fav_id):
     conn = get_db_connection()
     cursor = conn.cursor()
     
-    # 构建动态更新SQL
-    updates = []
-    params = []
-    
-    if category:
+    # Use predefined update statements for security
+    if category and note is not None:
+        # Update both fields
         if category not in ['冲', '稳', '保']:
             conn.close()
             return jsonify({'error': '无效的分类'}), 400
-        updates.append('category = ?')
-        params.append(category)
-    
-    if note is not None:
-        updates.append('note = ?')
-        params.append(note)
-    
-    params.extend([fav_id, user_id])
-    
-    cursor.execute(f'''
-        UPDATE user_favorites
-        SET {', '.join(updates)}
-        WHERE id = ? AND user_id = ?
-    ''', params)
+        cursor.execute('''
+            UPDATE user_favorites
+            SET category = ?, note = ?
+            WHERE id = ? AND user_id = ?
+        ''', (category, note, fav_id, user_id))
+    elif category:
+        # Update only category
+        if category not in ['冲', '稳', '保']:
+            conn.close()
+            return jsonify({'error': '无效的分类'}), 400
+        cursor.execute('''
+            UPDATE user_favorites
+            SET category = ?
+            WHERE id = ? AND user_id = ?
+        ''', (category, fav_id, user_id))
+    elif note is not None:
+        # Update only note
+        cursor.execute('''
+            UPDATE user_favorites
+            SET note = ?
+            WHERE id = ? AND user_id = ?
+        ''', (note, fav_id, user_id))
     
     if cursor.rowcount == 0:
         conn.close()

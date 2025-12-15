@@ -96,13 +96,12 @@ def calculate_trend(data_list: List[Dict]) -> Tuple[str, str]:
         return "稳定", f"近{n}年位次相对稳定，波动不大"
 
 
-def predict_rank(historical_ranks: List[int], years: List[int]) -> Dict:
+def predict_rank(historical_ranks: List[int]) -> Dict:
     """
     基于历史数据预测今年位次范围
     
     Args:
-        historical_ranks: 历史位次列表
-        years: 对应的年份列表
+        historical_ranks: 历史位次列表（按时间顺序）
     
     Returns:
         包含预测位次和置信区间的字典

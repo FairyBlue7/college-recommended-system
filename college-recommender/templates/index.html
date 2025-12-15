@@ -547,7 +547,7 @@
                                 <td>${item.avg_rank.toLocaleString()}</td>
                                 <td>${item.min_score || '暂无数据'}</td>
                                 <td>
-                                    <button class="favorite-btn" onclick="addToFavorites('${item.school}', '${item.major}', '冲')" title="收藏">
+                                    <button class="favorite-btn" onclick="addToFavorites('${item.school}', '${item.major}', '冲', event)" title="收藏">
                                         <i class="far fa-heart"></i>
                                     </button>
                                 </td>
@@ -591,7 +591,7 @@
                                 <td>${item.avg_rank.toLocaleString()}</td>
                                 <td>${item.min_score || '暂无数据'}</td>
                                 <td>
-                                    <button class="favorite-btn" onclick="addToFavorites('${item.school}', '${item.major}', '稳')" title="收藏">
+                                    <button class="favorite-btn" onclick="addToFavorites('${item.school}', '${item.major}', '稳', event)" title="收藏">
                                         <i class="far fa-heart"></i>
                                     </button>
                                 </td>
@@ -635,7 +635,7 @@
                                 <td>${item.avg_rank.toLocaleString()}</td>
                                 <td>${item.min_score || '暂无数据'}</td>
                                 <td>
-                                    <button class="favorite-btn" onclick="addToFavorites('${item.school}', '${item.major}', '保')" title="收藏">
+                                    <button class="favorite-btn" onclick="addToFavorites('${item.school}', '${item.major}', '保', event)" title="收藏">
                                         <i class="far fa-heart"></i>
                                     </button>
                                 </td>
@@ -710,7 +710,7 @@
         });
 
         // Add to favorites function
-        async function addToFavorites(school, major, category) {
+        async function addToFavorites(school, major, category, event) {
             try {
                 const response = await fetch('/api/favorites', {
                     method: 'POST',
@@ -729,10 +729,18 @@
                 if (response.ok) {
                     // Show success message
                     alert('✓ 已添加到志愿表！');
-                    // Change button appearance
-                    event.target.closest('.favorite-btn').classList.add('favorited');
-                    event.target.classList.remove('far');
-                    event.target.classList.add('fas');
+                    // Change button appearance if event is provided
+                    if (event && event.target) {
+                        const btn = event.target.closest('.favorite-btn');
+                        if (btn) {
+                            btn.classList.add('favorited');
+                            const icon = btn.querySelector('i');
+                            if (icon) {
+                                icon.classList.remove('far');
+                                icon.classList.add('fas');
+                            }
+                        }
+                    }
                 } else {
                     alert(data.error || '添加失败');
                 }
