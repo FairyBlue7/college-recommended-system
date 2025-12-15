@@ -449,13 +449,13 @@ body {
 
 /* Password strength colors */
 .strength-text-weak {
-    color: #e74c3c !important;
+    color: var(--danger) !important;
 }
 
 .strength-text-medium {
-    color: #f39c12 !important;
+    color: var(--warning) !important;
 }
 
 .strength-text-strong {
-    color: #27ae60 !important;
+    color: var(--success) !important;
 }
