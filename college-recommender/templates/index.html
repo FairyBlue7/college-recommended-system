@@ -317,6 +317,24 @@
                 gap: 10px;
             }
         }
+        .favorite-btn {
+            background: none;
+            border: none;
+            color: #e74c3c;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            padding: 5px 10px;
+        }
+        .favorite-btn:hover {
+            transform: scale(1.2);
+        }
+        .favorite-btn.favorited {
+            color: #e74c3c;
+        }
+        .favorite-btn.favorited i {
+            font-weight: 900;
+        }
     </style>
 </head>
 <body>
@@ -334,6 +352,12 @@
             <div class="user-actions">
                 <a href="/announcements" class="announcement">
                     <i class="fas fa-bell"></i> 公告
+                </a>
+                <a href="/analysis-page" class="analysis">
+                    <i class="fas fa-chart-line"></i> 位次分析
+                </a>
+                <a href="/wishlist" class="wishlist">
+                    <i class="fas fa-list-check"></i> 志愿表
                 </a>
                 <a href="/profile" class="profile">
                     <i class="fas fa-user-edit"></i> 个人资料
@@ -510,6 +534,7 @@
                                         <th>专业组/专业</th>
                                         <th>近3年平均位次</th>
                                         <th>参考最低分</th>
+                                        <th>操作</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -521,6 +546,11 @@
                                 <td>${item.major}</td>
                                 <td>${item.avg_rank.toLocaleString()}</td>
                                 <td>${item.min_score || '暂无数据'}</td>
+                                <td>
+                                    <button class="favorite-btn" onclick="addToFavorites('${item.school}', '${item.major}', '冲', event)" title="收藏">
+                                        <i class="far fa-heart"></i>
+                                    </button>
+                                </td>
                             </tr>
                         `;
                     });
@@ -548,6 +578,7 @@
                                         <th>专业组/专业</th>
                                         <th>近3年平均位次</th>
                                         <th>参考最低分</th>
+                                        <th>操作</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -559,6 +590,11 @@
                                 <td>${item.major}</td>
                                 <td>${item.avg_rank.toLocaleString()}</td>
                                 <td>${item.min_score || '暂无数据'}</td>
+                                <td>
+                                    <button class="favorite-btn" onclick="addToFavorites('${item.school}', '${item.major}', '稳', event)" title="收藏">
+                                        <i class="far fa-heart"></i>
+                                    </button>
+                                </td>
                             </tr>
                         `;
                     });
@@ -586,6 +622,7 @@
                                         <th>专业组/专业</th>
                                         <th>近3年平均位次</th>
                                         <th>参考最低分</th>
+                                        <th>操作</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -597,6 +634,11 @@
                                 <td>${item.major}</td>
                                 <td>${item.avg_rank.toLocaleString()}</td>
                                 <td>${item.min_score || '暂无数据'}</td>
+                                <td>
+                                    <button class="favorite-btn" onclick="addToFavorites('${item.school}', '${item.major}', '保', event)" title="收藏">
+                                        <i class="far fa-heart"></i>
+                                    </button>
+                                </td>
                             </tr>
                         `;
                     });
@@ -666,6 +708,47 @@
                 `;
             }
         });
+
+        // Add to favorites function
+        async function addToFavorites(school, major, category, event) {
+            try {
+                const response = await fetch('/api/favorites', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        school: school,
+                        major: major,
+                        category: category
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Show success message
+                    alert('✓ 已添加到志愿表！');
+                    // Change button appearance if event is provided
+                    if (event && event.target) {
+                        const btn = event.target.closest('.favorite-btn');
+                        if (btn) {
+                            btn.classList.add('favorited');
+                            const icon = btn.querySelector('i');
+                            if (icon) {
+                                icon.classList.remove('far');
+                                icon.classList.add('fas');
+                            }
+                        }
+                    }
+                } else {
+                    alert(data.error || '添加失败');
+                }
+            } catch (error) {
+                console.error('Failed to add favorite:', error);
+                alert('添加失败：' + error.message);
+            }
+        }
     </script>
 </body>
 </html>
