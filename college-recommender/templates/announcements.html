@@ -89,12 +89,18 @@
             gap: 1rem;
         }
         
+        .announcement-title-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
         .announcement-title {
             font-size: 1.5rem;
             font-weight: 700;
             color: var(--text-primary);
             margin: 0;
-            flex: 1;
         }
         
         .announcement-meta {
@@ -221,13 +227,13 @@
                 {% for ann in announcements %}
                 <div class="announcement-card">
                     <div class="announcement-header">
-                        <div style="flex: 1;">
+                        <div class="announcement-title-wrapper">
+                            {% if ann['is_pinned'] %}
+                                <span class="pinned-badge">
+                                    <i class="fas fa-thumbtack"></i> 置顶
+                                </span>
+                            {% endif %}
                             <h2 class="announcement-title">
-                                {% if ann['is_pinned'] %}
-                                    <span class="pinned-badge">
-                                        <i class="fas fa-thumbtack"></i> 置顶
-                                    </span>
-                                {% endif %}
                                 {{ ann['title'] }}
                             </h2>
                         </div>

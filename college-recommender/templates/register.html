@@ -292,7 +292,7 @@
                 
                 <div class="form-group">
                     <div class="input-group">
-                        <input type="password" name="password" id="password" placeholder="密码（至少6位）" required minlength="6">
+                        <input type="password" name="password" id="password" placeholder="密码（至少6位）" required minlength="6" pattern=".{6,}">
                         <i class="fas fa-lock input-icon"></i>
                     </div>
                     <div class="password-strength" id="passwordStrength">
@@ -340,19 +340,20 @@
             
             // 移除所有强度类
             strengthBar.classList.remove('strength-weak', 'strength-medium', 'strength-strong');
+            strengthText.classList.remove('strength-text-weak', 'strength-text-medium', 'strength-text-strong');
             
             if (strength <= 2) {
                 strengthBar.classList.add('strength-weak');
+                strengthText.classList.add('strength-text-weak');
                 strengthText.textContent = '弱';
-                strengthText.style.color = '#e74c3c';
             } else if (strength <= 3) {
                 strengthBar.classList.add('strength-medium');
+                strengthText.classList.add('strength-text-medium');
                 strengthText.textContent = '中等';
-                strengthText.style.color = '#f39c12';
             } else {
                 strengthBar.classList.add('strength-strong');
+                strengthText.classList.add('strength-text-strong');
                 strengthText.textContent = '强';
-                strengthText.style.color = '#27ae60';
             }
         });
     </script>
