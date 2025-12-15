@@ -20,7 +20,10 @@ DB_PATH = 'data/admissions.db'
 # 数据库连接工具（统一入口）
 # ========================
 def get_db_connection():
-    """获取数据库连接，支持字典式访问"""
+    """
+    获取数据库连接，支持字典式访问
+    注意: 调用者负责关闭连接
+    """
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row  # 允许使用列名访问数据
     return conn
@@ -28,7 +31,15 @@ def get_db_connection():
 
 @contextmanager
 def get_db():
-    """数据库连接上下文管理器"""
+    """
+    数据库连接上下文管理器（推荐使用）
+    自动处理连接关闭，避免资源泄漏
+    
+    用法:
+        with get_db() as conn:
+            cursor = conn.cursor()
+            cursor.execute(...)
+    """
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     try:
@@ -394,7 +405,7 @@ def recommend_api():
             avg_rank = rec['avg_rank']
             # 添加录取概率
             rec['probability'] = calculate_admission_probability(student_rank, avg_rank)
-            
+
             if lower_bound_rush <= avg_rank < upper_bound_rush:
                 recommendations['冲'].append(rec)
             elif lower_bound_safe <= avg_rank <= upper_bound_safe:
@@ -407,8 +418,8 @@ def recommend_api():
 
         return jsonify(recommendations)
 
-    except ValueError:
-        return jsonify({'error': '位次必须为有效的数字'}), 400
+    except (ValueError, KeyError):
+        return jsonify({'error': '位次必须为有效的数字，且所有字段必填'}), 400
     except Exception as e:
         return jsonify({'error': f'服务器错误: {str(e)}'}), 500
 
