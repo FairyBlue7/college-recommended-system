@@ -1,11 +1,14 @@
 # -*- coding: utf-8 -*-
 import sqlite3
-from flask import Flask, render_template, request, jsonify, redirect, url_for, session, flash
+from flask import Flask, render_template, request, jsonify, redirect, url_for, session, flash, send_file
 from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.utils import secure_filename
 import os
 from functools import wraps
 from contextlib import contextmanager
 import re
+import csv
+from io import StringIO, BytesIO
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY') or 'dev-secret-key-change-in-production'
@@ -622,6 +625,195 @@ def delete_announcement(ann_id):
     conn.close()
     flash('公告删除成功！', 'success')
     return redirect(url_for('manage_announcements'))
+
+
+# ========================
+# 数据导入功能（新增！）
+# ========================
+
+def detect_csv_encoding(file_content: bytes) -> str:
+    """检测 CSV 文件编码"""
+    encodings = ['utf-8', 'gbk', 'utf-8-sig']
+    for encoding in encodings:
+        try:
+            file_content.decode(encoding)
+            return encoding
+        except (UnicodeDecodeError, UnicodeError):
+            continue
+    return 'utf-8'
+
+
+def validate_csv_row(row: dict, line_num: int) -> tuple:
+    """验证单行数据，返回 (是否有效, 错误信息)"""
+    required_fields = ['province', 'exam_type', 'year', 'school', 'major', 'min_score', 'min_rank']
+    
+    for field in required_fields:
+        if field not in row or not row[field] or str(row[field]).strip() == '':
+            return False, f"第 {line_num} 行缺少必填字段: {field}"
+    
+    try:
+        year = int(row['year'])
+        if year < 2000 or year > 2030:
+            return False, f"第 {line_num} 行年份不合理: {year}"
+    except ValueError:
+        return False, f"第 {line_num} 行年份格式错误"
+    
+    try:
+        score = float(row['min_score'])
+        if score < 0 or score > 750:
+            return False, f"第 {line_num} 行分数不合理: {score}"
+    except ValueError:
+        return False, f"第 {line_num} 行分数格式错误"
+    
+    try:
+        rank = int(float(row['min_rank']))
+        if rank < 0:
+            return False, f"第 {line_num} 行位次不能为负数"
+    except ValueError:
+        return False, f"第 {line_num} 行位次格式错误"
+    
+    return True, ""
+
+
+def parse_csv_file(file_content: bytes) -> tuple:
+    """解析 CSV 文件，返回 (数据行列表, 错误列表)"""
+    encoding = detect_csv_encoding(file_content)
+    content = file_content.decode(encoding)
+    
+    # 移除 BOM
+    if content.startswith('\ufeff'):
+        content = content[1:]
+    
+    data_rows = []
+    errors = []
+    
+    try:
+        reader = csv.DictReader(StringIO(content))
+        for i, row in enumerate(reader, start=2):
+            row = {k.strip(): v.strip() if v else '' for k, v in row.items()}
+            is_valid, error_msg = validate_csv_row(row, i)
+            if not is_valid:
+                errors.append(error_msg)
+            else:
+                data_rows.append(row)
+    except Exception as e:
+        errors.append(f"解析 CSV 文件时发生错误: {str(e)}")
+    
+    return data_rows, errors
+
+
+def import_csv_to_database(data_rows: list) -> dict:
+    """导入数据到数据库，返回统计信息"""
+    stats = {'success': 0, 'skipped': 0, 'failed': 0}
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        for row in data_rows:
+            try:
+                province = row['province'].strip()
+                exam_type = row['exam_type'].strip()
+                year = int(row['year'])
+                school = row['school'].strip()
+                major = row['major'].strip()
+                min_score = int(float(row['min_score']))
+                min_rank = int(float(row['min_rank']))
+                
+                # 检查重复
+                cursor.execute('''
+                    SELECT id FROM admissions 
+                    WHERE province = ? AND exam_type = ? AND year = ? 
+                    AND school = ? AND major = ?
+                ''', (province, exam_type, year, school, major))
+                
+                if cursor.fetchone():
+                    stats['skipped'] += 1
+                else:
+                    cursor.execute('''
+                        INSERT INTO admissions 
+                        (province, exam_type, year, school, major, min_score, min_rank)
+                        VALUES (?, ?, ?, ?, ?, ?, ?)
+                    ''', (province, exam_type, year, school, major, min_score, min_rank))
+                    stats['success'] += 1
+            except Exception as e:
+                stats['failed'] += 1
+        
+        conn.commit()
+    except Exception:
+        conn.rollback()
+    finally:
+        conn.close()
+    
+    return stats
+
+
+@app.route('/admin/import-data', methods=['GET', 'POST'])
+@admin_required
+def import_data_page():
+    """数据导入页面"""
+    if request.method == 'POST':
+        # 检查是否有文件上传
+        if 'csv_file' not in request.files:
+            flash('请选择要上传的 CSV 文件！', 'error')
+            return redirect(url_for('import_data_page'))
+        
+        file = request.files['csv_file']
+        if file.filename == '':
+            flash('请选择要上传的 CSV 文件！', 'error')
+            return redirect(url_for('import_data_page'))
+        
+        if not file.filename.endswith('.csv'):
+            flash('只支持 CSV 格式文件！', 'error')
+            return redirect(url_for('import_data_page'))
+        
+        try:
+            # 读取文件内容
+            file_content = file.read()
+            
+            # 解析 CSV
+            data_rows, errors = parse_csv_file(file_content)
+            
+            if errors:
+                error_msg = '<br>'.join(errors[:10])
+                if len(errors) > 10:
+                    error_msg += f'<br>... 还有 {len(errors) - 10} 个错误'
+                flash(f'CSV 文件中发现错误：<br>{error_msg}', 'error')
+                if not data_rows:
+                    return redirect(url_for('import_data_page'))
+            
+            # 如果是预览模式
+            if request.form.get('action') == 'preview':
+                preview_data = data_rows[:10]
+                return render_template('admin_import.html',
+                                     preview=preview_data,
+                                     total_count=len(data_rows),
+                                     error_count=len(errors),
+                                     username=session.get('username'))
+            
+            # 导入数据库
+            stats = import_csv_to_database(data_rows)
+            
+            flash(f'导入完成！成功: {stats["success"]} 条，跳过重复: {stats["skipped"]} 条，失败: {stats["failed"]} 条', 'success')
+            return redirect(url_for('import_data_page'))
+        
+        except Exception as e:
+            flash(f'处理文件时发生错误: {str(e)}', 'error')
+            return redirect(url_for('import_data_page'))
+    
+    # GET 请求：显示上传页面
+    return render_template('admin_import.html', username=session.get('username'))
+
+
+@app.route('/admin/download-template')
+@admin_required
+def download_template():
+    """下载 CSV 模板文件"""
+    template_path = os.path.join('data', 'template.csv')
+    if os.path.exists(template_path):
+        return send_file(template_path, as_attachment=True, download_name='template.csv')
+    else:
+        flash('模板文件不存在！', 'error')
+        return redirect(url_for('import_data_page'))
 
 
 # ========================

@@ -147,6 +147,8 @@
             <div class="user-info">
                 当前管理员：<strong>{{ session.username }}</strong>
                 <div class="nav-links">
+                    <a href="{{ url_for('import_data_page') }}">数据导入</a>
+                    <a href="{{ url_for('manage_announcements') }}">公告管理</a>
                     <a href="{{ url_for('recommend_page') }}">返回推荐页</a>
                     <a href="{{ url_for('logout') }}">退出登录</a>
                 </div>

@@ -1,0 +1,414 @@
+<!-- templates/admin_import.html -->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>数据导入 - 管理后台</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Segoe UI", "Microsoft YaHei", sans-serif;
+        }
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            overflow: hidden;
+        }
+        header {
+            background: linear-gradient(135deg, #4a6cf7, #6d5dfc);
+            color: white;
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        header h1 {
+            font-size: 24px;
+            font-weight: 600;
+        }
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            margin-left: 16px;
+            padding: 6px 12px;
+            border-radius: 4px;
+            background: rgba(255,255,255,0.2);
+            transition: background 0.2s;
+        }
+        .nav-links a:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .section {
+            margin-bottom: 30px;
+        }
+
+        .section h2 {
+            font-size: 20px;
+            margin-bottom: 15px;
+            color: #333;
+            border-bottom: 2px solid #4a6cf7;
+            padding-bottom: 8px;
+        }
+
+        .info-box {
+            background-color: #f0f7ff;
+            border-left: 4px solid #4a6cf7;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+
+        .info-box h3 {
+            font-size: 16px;
+            margin-bottom: 10px;
+            color: #4a6cf7;
+        }
+
+        .info-box p {
+            margin: 5px 0;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .info-box ul {
+            margin: 10px 0 0 20px;
+        }
+
+        .info-box li {
+            margin: 5px 0;
+            font-size: 14px;
+        }
+
+        .upload-form {
+            background-color: #fafbfc;
+            padding: 25px;
+            border-radius: 8px;
+            border: 2px dashed #d1d5db;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            color: #555;
+        }
+
+        .form-group input[type="file"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+            background-color: white;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background-color: #4a6cf7;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #3b5dd6;
+        }
+
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background-color: #5a6268;
+        }
+
+        .btn-link {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+            border: 1px solid #c8e6c9;
+        }
+
+        .btn-link:hover {
+            background-color: #c8e6c9;
+        }
+
+        .flash-message {
+            margin: 15px 0;
+            padding: 12px 15px;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .flash-success {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+            border: 1px solid #c8e6c9;
+        }
+
+        .flash-error {
+            background-color: #ffebee;
+            color: #c62828;
+            border: 1px solid #ffcdd2;
+        }
+
+        .preview-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            font-size: 13px;
+        }
+
+        .preview-table th,
+        .preview-table td {
+            padding: 10px;
+            text-align: left;
+            border: 1px solid #e0e0e0;
+        }
+
+        .preview-table th {
+            background-color: #f5f7fa;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .preview-table tr:hover {
+            background-color: #f9fafb;
+        }
+
+        .format-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            font-size: 13px;
+        }
+
+        .format-table th,
+        .format-table td {
+            padding: 8px 12px;
+            text-align: left;
+            border: 1px solid #e0e0e0;
+        }
+
+        .format-table th {
+            background-color: #f0f7ff;
+            font-weight: 600;
+            color: #4a6cf7;
+        }
+
+        .stats-box {
+            background-color: #f0f7ff;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 15px;
+        }
+
+        .stats-box p {
+            margin: 5px 0;
+            font-size: 14px;
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: #888;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>高考志愿推荐系统 · 数据导入</h1>
+            <div class="nav-links">
+                <a href="{{ url_for('admin_dashboard') }}">用户管理</a>
+                <a href="{{ url_for('manage_announcements') }}">公告管理</a>
+                <a href="{{ url_for('recommend_page') }}">返回推荐页</a>
+                <a href="{{ url_for('logout') }}">退出登录</a>
+            </div>
+        </header>
+
+        <div class="content">
+            <!-- Flash Messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="flash-message flash-{{ category }}">
+                            {{ message | safe }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <!-- CSV 格式说明 -->
+            <div class="section">
+                <h2>📄 CSV 文件格式说明</h2>
+                <div class="info-box">
+                    <h3>必填字段</h3>
+                    <p>CSV 文件必须包含以下列（顺序可以不同）：</p>
+                    <table class="format-table">
+                        <thead>
+                            <tr>
+                                <th>列名</th>
+                                <th>说明</th>
+                                <th>示例</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>province</code></td>
+                                <td>省份</td>
+                                <td>广东、北京、上海</td>
+                            </tr>
+                            <tr>
+                                <td><code>exam_type</code></td>
+                                <td>科类</td>
+                                <td>物理类、历史类、理科、文科、综合改革</td>
+                            </tr>
+                            <tr>
+                                <td><code>year</code></td>
+                                <td>年份</td>
+                                <td>2024、2023</td>
+                            </tr>
+                            <tr>
+                                <td><code>school</code></td>
+                                <td>学校名称</td>
+                                <td>中山大学、北京大学</td>
+                            </tr>
+                            <tr>
+                                <td><code>major</code></td>
+                                <td>专业名称</td>
+                                <td>计算机科学与技术、人工智能</td>
+                            </tr>
+                            <tr>
+                                <td><code>min_score</code></td>
+                                <td>最低录取分</td>
+                                <td>645</td>
+                            </tr>
+                            <tr>
+                                <td><code>min_rank</code></td>
+                                <td>最低录取位次</td>
+                                <td>3500</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="info-box">
+                    <h3>注意事项</h3>
+                    <ul>
+                        <li>支持 UTF-8 和 GBK 编码</li>
+                        <li>相同省份、科类、年份、学校、专业的记录会被自动跳过（不会重复导入）</li>
+                        <li>年份范围：2000-2030</li>
+                        <li>分数范围：0-750</li>
+                        <li>位次必须为非负整数</li>
+                    </ul>
+                </div>
+
+                <a href="{{ url_for('download_template') }}" class="btn btn-link">📥 下载 CSV 模板</a>
+            </div>
+
+            <!-- 文件上传表单 -->
+            <div class="section">
+                <h2>📤 上传 CSV 文件</h2>
+                <form method="POST" enctype="multipart/form-data" class="upload-form">
+                    <div class="form-group">
+                        <label for="csv_file">选择 CSV 文件：</label>
+                        <input type="file" id="csv_file" name="csv_file" accept=".csv" required>
+                    </div>
+                    <div class="button-group">
+                        <button type="submit" name="action" value="preview" class="btn btn-secondary">
+                            👁️ 预览数据
+                        </button>
+                        <button type="submit" name="action" value="import" class="btn btn-primary">
+                            ✅ 直接导入
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- 预览数据 -->
+            {% if preview %}
+            <div class="section">
+                <h2>👁️ 数据预览（前 10 条）</h2>
+                <div class="stats-box">
+                    <p><strong>总数据量：</strong> {{ total_count }} 条</p>
+                    {% if error_count > 0 %}
+                    <p style="color: #c62828;"><strong>错误数量：</strong> {{ error_count }} 条（已跳过）</p>
+                    {% endif %}
+                </div>
+                <table class="preview-table">
+                    <thead>
+                        <tr>
+                            <th>省份</th>
+                            <th>科类</th>
+                            <th>年份</th>
+                            <th>学校</th>
+                            <th>专业</th>
+                            <th>最低分</th>
+                            <th>最低位次</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in preview %}
+                        <tr>
+                            <td>{{ row.province }}</td>
+                            <td>{{ row.exam_type }}</td>
+                            <td>{{ row.year }}</td>
+                            <td>{{ row.school }}</td>
+                            <td>{{ row.major }}</td>
+                            <td>{{ row.min_score }}</td>
+                            <td>{{ row.min_rank }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <p style="margin-top: 15px; font-size: 14px; color: #666;">
+                    ℹ️ 如果数据无误，请点击"直接导入"按钮重新上传并导入数据。
+                </p>
+            </div>
+            {% endif %}
+        </div>
+
+        <footer>
+            © 2025 高考志愿推荐系统 · 管理后台
+        </footer>
+    </div>
+</body>
+</html>
