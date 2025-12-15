@@ -1,0 +1,269 @@
+2025-11-22 21:56:06,915 - college-recommender - INFO - ���ڳ�ʼ���Ƽ�ϵͳ�����ݿ�·��: data/admissions.db
+2025-11-22 21:56:06,918 - college-recommender - ERROR - �����޷��������У��������ݿ�����
+2025-11-22 21:56:06,951 - college-recommender - INFO - ���ڳ�ʼ���Ƽ�ϵͳ�����ݿ�·��: data/admissions.db
+2025-11-22 21:56:07,058 - college-recommender - ERROR - �����޷��������У��������ݿ�����
+2025-11-22 21:56:07,168 - college-recommender - INFO - FastAPI �汾: 0.33.0
+2025-11-22 21:56:14,718 - college-recommender - INFO - ���ڳ�ʼ���Ƽ�ϵͳ�����ݿ�·��: data/admissions.db
+2025-11-22 21:56:14,720 - college-recommender - ERROR - �����޷��������У��������ݿ�����
+2025-11-22 21:56:14,748 - college-recommender - INFO - ���ڳ�ʼ���Ƽ�ϵͳ�����ݿ�·��: data/admissions.db
+2025-11-22 21:56:14,750 - college-recommender - ERROR - �����޷��������У��������ݿ�����
+2025-11-22 21:56:14,758 - college-recommender - INFO - FastAPI �汾: 0.33.0
+2025-11-22 21:56:19,106 - college-recommender - INFO - ���ڳ�ʼ���Ƽ�ϵͳ�����ݿ�·��: data/admissions.db
+2025-11-22 21:56:19,109 - college-recommender - ERROR - �����޷��������У��������ݿ�����
+2025-11-22 21:56:19,135 - college-recommender - INFO - ���ڳ�ʼ���Ƽ�ϵͳ�����ݿ�·��: data/admissions.db
+2025-11-22 21:56:19,138 - college-recommender - ERROR - �����޷��������У��������ݿ�����
+2025-11-22 21:56:19,147 - college-recommender - INFO - FastAPI �汾: 0.33.0
+2025-11-22 21:56:29,328 - college-recommender - INFO - ���ڳ�ʼ���Ƽ�ϵͳ�����ݿ�·��: data/admissions.db
+2025-11-22 21:56:29,330 - college-recommender - ERROR - �����޷��������У��������ݿ�����
+2025-11-22 21:56:29,356 - college-recommender - INFO - ���ڳ�ʼ���Ƽ�ϵͳ�����ݿ�·��: data/admissions.db
+2025-11-22 21:56:29,359 - college-recommender - ERROR - �����޷��������У��������ݿ�����
+2025-11-22 21:56:29,367 - college-recommender - INFO - FastAPI �汾: 0.33.0
+2025-11-22 21:59:04,739 - college-recommender - INFO - 正在初始化推荐系统，数据库路径: data/admissions.db
+2025-11-22 21:59:04,740 - college-recommender - ERROR - 推荐系统初始化失败: 'CollegeRecommender' object has no attribute '_ensure_no_duplicates'
+2025-11-22 21:59:04,740 - college-recommender - ERROR - 服务将无法正常运行，请检查数据库配置
+2025-11-22 21:59:04,745 - college-recommender - INFO - 启动配置 - HOST: 0.0.0.0, PORT: 8000, RELOAD: False, WORKERS: 1
+2025-11-22 21:59:04,771 - college-recommender - INFO - 正在初始化推荐系统，数据库路径: data/admissions.db
+2025-11-22 21:59:04,771 - college-recommender - ERROR - 推荐系统初始化失败: 'CollegeRecommender' object has no attribute '_ensure_no_duplicates'
+2025-11-22 21:59:04,771 - college-recommender - ERROR - 服务将无法正常运行，请检查数据库配置
+2025-11-22 21:59:04,778 - college-recommender - INFO - 应用启动中...
+2025-11-22 21:59:04,778 - college-recommender - INFO - FastAPI 版本: 0.33.0
+2025-11-22 21:59:04,778 - college-recommender - INFO - SQLite3 版本: 3.35.5
+2025-11-22 21:59:25,544 - college-recommender - ERROR - 全局异常捕获: parameter `request` must be an instance of starlette.requests.Request
+2025-11-22 21:59:25,544 - college-recommender - ERROR - 详细堆栈跟踪:
+Traceback (most recent call last):
+  File "C:\Users\24070\AppData\Local\Programs\Python\Python38\lib\site-packages\starlette\middleware\errors.py", line 165, in __call__
+    await self.app(scope, receive, _send)
+  File "C:\Users\24070\AppData\Local\Programs\Python\Python38\lib\site-packages\starlette\middleware\exceptions.py", line 62, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "C:\Users\24070\AppData\Local\Programs\Python\Python38\lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "C:\Users\24070\AppData\Local\Programs\Python\Python38\lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\24070\AppData\Local\Programs\Python\Python38\lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "C:\Users\24070\AppData\Local\Programs\Python\Python38\lib\site-packages\starlette\routing.py", line 715, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "C:\Users\24070\AppData\Local\Programs\Python\Python38\lib\site-packages\starlette\routing.py", line 735, in app
+    await route.handle(scope, receive, send)
+  File "C:\Users\24070\AppData\Local\Programs\Python\Python38\lib\site-packages\starlette\routing.py", line 288, in handle
+    await self.app(scope, receive, send)
+  File "C:\Users\24070\AppData\Local\Programs\Python\Python38\lib\site-packages\fastapi\routing.py", line 125, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "C:\Users\24070\AppData\Local\Programs\Python\Python38\lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "C:\Users\24070\AppData\Local\Programs\Python\Python38\lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\24070\AppData\Local\Programs\Python\Python38\lib\site-packages\fastapi\routing.py", line 111, in app
+    response = await f(request)
+  File "C:\Users\24070\AppData\Local\Programs\Python\Python38\lib\site-packages\fastapi\routing.py", line 391, in app
+    raw_response = await run_endpoint_function(
+  File "C:\Users\24070\AppData\Local\Programs\Python\Python38\lib\site-packages\fastapi\routing.py", line 290, in run_endpoint_function
+    return await dependant.call(**values)
+  File "C:\Users\24070\AppData\Local\Programs\Python\Python38\lib\site-packages\slowapi\extension.py", line 725, in async_wrapper
+    raise Exception(
+Exception: parameter `request` must be an instance of starlette.requests.Request
+2025-11-22 21:59:46,126 - college-recommender - ERROR - 全局异常捕获: parameter `request` must be an instance of starlette.requests.Request
+2025-11-22 21:59:46,127 - college-recommender - ERROR - 详细堆栈跟踪:
+Traceback (most recent call last):
+  File "C:\Users\24070\AppData\Local\Programs\Python\Python38\lib\site-packages\starlette\middleware\errors.py", line 165, in __call__
+    await self.app(scope, receive, _send)
+  File "C:\Users\24070\AppData\Local\Programs\Python\Python38\lib\site-packages\starlette\middleware\exceptions.py", line 62, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "C:\Users\24070\AppData\Local\Programs\Python\Python38\lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "C:\Users\24070\AppData\Local\Programs\Python\Python38\lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\24070\AppData\Local\Programs\Python\Python38\lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "C:\Users\24070\AppData\Local\Programs\Python\Python38\lib\site-packages\starlette\routing.py", line 715, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "C:\Users\24070\AppData\Local\Programs\Python\Python38\lib\site-packages\starlette\routing.py", line 735, in app
+    await route.handle(scope, receive, send)
+  File "C:\Users\24070\AppData\Local\Programs\Python\Python38\lib\site-packages\starlette\routing.py", line 288, in handle
+    await self.app(scope, receive, send)
+  File "C:\Users\24070\AppData\Local\Programs\Python\Python38\lib\site-packages\fastapi\routing.py", line 125, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "C:\Users\24070\AppData\Local\Programs\Python\Python38\lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "C:\Users\24070\AppData\Local\Programs\Python\Python38\lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\24070\AppData\Local\Programs\Python\Python38\lib\site-packages\fastapi\routing.py", line 111, in app
+    response = await f(request)
+  File "C:\Users\24070\AppData\Local\Programs\Python\Python38\lib\site-packages\fastapi\routing.py", line 391, in app
+    raw_response = await run_endpoint_function(
+  File "C:\Users\24070\AppData\Local\Programs\Python\Python38\lib\site-packages\fastapi\routing.py", line 290, in run_endpoint_function
+    return await dependant.call(**values)
+  File "C:\Users\24070\AppData\Local\Programs\Python\Python38\lib\site-packages\slowapi\extension.py", line 725, in async_wrapper
+    raise Exception(
+Exception: parameter `request` must be an instance of starlette.requests.Request
+2025-11-22 22:08:51,836 - college-recommender - INFO - 应用正在关闭...
+2025-11-22 22:08:54,286 - college-recommender - INFO - 正在初始化推荐系统，数据库路径: data/admissions.db
+2025-11-22 22:08:54,303 - college-recommender - INFO - 推荐系统初始化成功
+2025-11-22 22:08:54,309 - college-recommender - INFO - 启动配置 - HOST: 0.0.0.0, PORT: 8000, RELOAD: False, WORKERS: 1
+2025-11-22 22:08:54,334 - college-recommender - INFO - 正在初始化推荐系统，数据库路径: data/admissions.db
+2025-11-22 22:08:54,351 - college-recommender - INFO - 推荐系统初始化成功
+2025-11-22 22:08:54,356 - college-recommender - INFO - 应用启动中...
+2025-11-22 22:08:54,356 - college-recommender - INFO - Uvicorn 版本: 0.33.0
+2025-11-22 22:08:54,356 - college-recommender - INFO - SQLite3 版本: 3.35.5
+2025-11-22 22:08:54,356 - college-recommender - INFO - 数据库预热完成，总记录数: 5096
+2025-11-22 22:08:58,602 - fastapi - WARNING - email-validator not installed, email fields will be treated as str.
+To install, run: pip install email-validator
+2025-11-22 22:09:18,743 - college-recommender - ERROR - 全局异常捕获: parameter `request` must be an instance of starlette.requests.Request
+2025-11-22 22:09:18,743 - college-recommender - ERROR - 详细堆栈跟踪:
+Traceback (most recent call last):
+  File "C:\Users\24070\AppData\Local\Programs\Python\Python38\lib\site-packages\starlette\middleware\errors.py", line 165, in __call__
+    await self.app(scope, receive, _send)
+  File "C:\Users\24070\AppData\Local\Programs\Python\Python38\lib\site-packages\starlette\middleware\cors.py", line 93, in __call__
+    await self.simple_response(scope, receive, send, request_headers=headers)
+  File "C:\Users\24070\AppData\Local\Programs\Python\Python38\lib\site-packages\starlette\middleware\cors.py", line 144, in simple_response
+    await self.app(scope, receive, send)
+  File "C:\Users\24070\AppData\Local\Programs\Python\Python38\lib\site-packages\starlette\middleware\exceptions.py", line 62, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "C:\Users\24070\AppData\Local\Programs\Python\Python38\lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "C:\Users\24070\AppData\Local\Programs\Python\Python38\lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\24070\AppData\Local\Programs\Python\Python38\lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "C:\Users\24070\AppData\Local\Programs\Python\Python38\lib\site-packages\starlette\routing.py", line 715, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "C:\Users\24070\AppData\Local\Programs\Python\Python38\lib\site-packages\starlette\routing.py", line 735, in app
+    await route.handle(scope, receive, send)
+  File "C:\Users\24070\AppData\Local\Programs\Python\Python38\lib\site-packages\starlette\routing.py", line 288, in handle
+    await self.app(scope, receive, send)
+  File "C:\Users\24070\AppData\Local\Programs\Python\Python38\lib\site-packages\fastapi\routing.py", line 125, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "C:\Users\24070\AppData\Local\Programs\Python\Python38\lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "C:\Users\24070\AppData\Local\Programs\Python\Python38\lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\24070\AppData\Local\Programs\Python\Python38\lib\site-packages\fastapi\routing.py", line 111, in app
+    response = await f(request)
+  File "C:\Users\24070\AppData\Local\Programs\Python\Python38\lib\site-packages\fastapi\routing.py", line 391, in app
+    raw_response = await run_endpoint_function(
+  File "C:\Users\24070\AppData\Local\Programs\Python\Python38\lib\site-packages\fastapi\routing.py", line 290, in run_endpoint_function
+    return await dependant.call(**values)
+  File "C:\Users\24070\AppData\Local\Programs\Python\Python38\lib\site-packages\slowapi\extension.py", line 725, in async_wrapper
+    raise Exception(
+Exception: parameter `request` must be an instance of starlette.requests.Request
+2025-11-22 22:10:45,936 - college-recommender - INFO - 应用正在关闭...
+2025-11-22 22:10:45,936 - college-recommender - INFO - 数据库连接已关闭
+2025-11-22 22:12:41,696 - college-recommender - INFO - 正在初始化推荐系统，数据库路径: data/admissions.db
+2025-11-22 22:12:41,716 - college-recommender - INFO - 推荐系统初始化成功
+2025-11-22 22:12:41,722 - college-recommender - INFO - 启动配置 - HOST: 0.0.0.0, PORT: 8000, RELOAD: False, WORKERS: 1
+2025-11-22 22:12:41,745 - college-recommender - INFO - 正在初始化推荐系统，数据库路径: data/admissions.db
+2025-11-22 22:12:41,766 - college-recommender - INFO - 推荐系统初始化成功
+2025-11-22 22:12:41,772 - college-recommender - INFO - 应用启动中...
+2025-11-22 22:12:41,772 - college-recommender - INFO - Uvicorn 版本: 0.33.0
+2025-11-22 22:12:41,772 - college-recommender - INFO - SQLite3 版本: 3.35.5
+2025-11-22 22:12:41,772 - college-recommender - INFO - 数据库预热完成，总记录数: 5096
+2025-11-22 22:12:44,332 - fastapi - WARNING - email-validator not installed, email fields will be treated as str.
+To install, run: pip install email-validator
+2025-11-22 22:12:47,113 - college-recommender - ERROR - 全局异常捕获: parameter `request` must be an instance of starlette.requests.Request
+2025-11-22 22:12:47,113 - college-recommender - ERROR - 详细堆栈跟踪:
+Traceback (most recent call last):
+  File "C:\Users\24070\AppData\Local\Programs\Python\Python38\lib\site-packages\starlette\middleware\errors.py", line 165, in __call__
+    await self.app(scope, receive, _send)
+  File "C:\Users\24070\AppData\Local\Programs\Python\Python38\lib\site-packages\starlette\middleware\cors.py", line 93, in __call__
+    await self.simple_response(scope, receive, send, request_headers=headers)
+  File "C:\Users\24070\AppData\Local\Programs\Python\Python38\lib\site-packages\starlette\middleware\cors.py", line 144, in simple_response
+    await self.app(scope, receive, send)
+  File "C:\Users\24070\AppData\Local\Programs\Python\Python38\lib\site-packages\starlette\middleware\exceptions.py", line 62, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "C:\Users\24070\AppData\Local\Programs\Python\Python38\lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "C:\Users\24070\AppData\Local\Programs\Python\Python38\lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\24070\AppData\Local\Programs\Python\Python38\lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "C:\Users\24070\AppData\Local\Programs\Python\Python38\lib\site-packages\starlette\routing.py", line 715, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "C:\Users\24070\AppData\Local\Programs\Python\Python38\lib\site-packages\starlette\routing.py", line 735, in app
+    await route.handle(scope, receive, send)
+  File "C:\Users\24070\AppData\Local\Programs\Python\Python38\lib\site-packages\starlette\routing.py", line 288, in handle
+    await self.app(scope, receive, send)
+  File "C:\Users\24070\AppData\Local\Programs\Python\Python38\lib\site-packages\fastapi\routing.py", line 125, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "C:\Users\24070\AppData\Local\Programs\Python\Python38\lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "C:\Users\24070\AppData\Local\Programs\Python\Python38\lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\24070\AppData\Local\Programs\Python\Python38\lib\site-packages\fastapi\routing.py", line 111, in app
+    response = await f(request)
+  File "C:\Users\24070\AppData\Local\Programs\Python\Python38\lib\site-packages\fastapi\routing.py", line 391, in app
+    raw_response = await run_endpoint_function(
+  File "C:\Users\24070\AppData\Local\Programs\Python\Python38\lib\site-packages\fastapi\routing.py", line 290, in run_endpoint_function
+    return await dependant.call(**values)
+  File "C:\Users\24070\AppData\Local\Programs\Python\Python38\lib\site-packages\slowapi\extension.py", line 725, in async_wrapper
+    raise Exception(
+Exception: parameter `request` must be an instance of starlette.requests.Request
+2025-11-22 22:16:38,462 - college-recommender - INFO - 应用正在关闭...
+2025-11-22 22:16:38,462 - college-recommender - INFO - 数据库连接已关闭
+2025-11-22 22:16:40,765 - college-recommender - INFO - 正在初始化推荐系统，数据库路径: data/admissions.db
+2025-11-22 22:16:40,783 - college-recommender - INFO - 推荐系统初始化成功
+2025-11-22 22:16:40,789 - college-recommender - INFO - 启动配置 - HOST: 0.0.0.0, PORT: 8000, RELOAD: False, WORKERS: 1
+2025-11-22 22:16:40,814 - college-recommender - INFO - 正在初始化推荐系统，数据库路径: data/admissions.db
+2025-11-22 22:16:40,832 - college-recommender - INFO - 推荐系统初始化成功
+2025-11-22 22:16:40,836 - college-recommender - INFO - 应用启动中...
+2025-11-22 22:16:40,836 - college-recommender - INFO - Uvicorn 版本: 0.33.0
+2025-11-22 22:16:40,836 - college-recommender - INFO - SQLite3 版本: 3.35.5
+2025-11-22 22:16:40,838 - college-recommender - INFO - 数据库预热完成，总记录数: 5096
+2025-11-22 22:16:43,774 - fastapi - WARNING - email-validator not installed, email fields will be treated as str.
+To install, run: pip install email-validator
+2025-11-22 22:16:52,684 - college-recommender - INFO - 收到策略推荐请求: {'score': 750, 'rank': 1, 'province': '广东', 'exam_type': '物理类', 'top_n': 15}
+2025-11-22 22:16:52,685 - college-recommender - WARNING - 策略推荐返回警告: 未找到匹配院校，请尝试调整分数或排名范围
+2025-11-22 22:17:04,331 - college-recommender - INFO - 收到策略推荐请求: {'score': 600, 'rank': 15000, 'province': '广东', 'exam_type': '物理类', 'top_n': 15}
+2025-11-22 22:17:04,335 - college-recommender - INFO - 策略推荐成功完成，耗时: 0.004s，总计: 9 所院校
+2025-11-22 22:23:49,658 - college-recommender - INFO - 应用正在关闭...
+2025-11-22 22:23:49,658 - college-recommender - INFO - 数据库连接已关闭
+2025-11-22 22:23:52,720 - college-recommender - INFO - 正在初始化推荐系统，数据库路径: data/admissions.db
+2025-11-22 22:23:52,739 - college-recommender - INFO - 推荐系统初始化成功
+2025-11-22 22:23:52,745 - college-recommender - INFO - 启动配置 - HOST: 0.0.0.0, PORT: 8000, RELOAD: False, WORKERS: 1
+2025-11-22 22:23:52,745 - college-recommender - WARNING - 注意：当前系统仅配置了2025年广东省录取数据
+2025-11-22 22:23:52,794 - college-recommender - INFO - 正在初始化推荐系统，数据库路径: data/admissions.db
+2025-11-22 22:23:52,812 - college-recommender - INFO - 推荐系统初始化成功
+2025-11-22 22:23:52,818 - college-recommender - INFO - 应用启动中...
+2025-11-22 22:23:52,818 - college-recommender - INFO - Uvicorn 版本: 0.33.0
+2025-11-22 22:23:52,818 - college-recommender - INFO - SQLite3 版本: 3.35.5
+2025-11-22 22:23:52,818 - college-recommender - INFO - 数据库预热完成，总记录数: 5096
+2025-11-22 22:23:52,818 - college-recommender - INFO - 数据库包含省份: 广东
+2025-11-22 22:23:52,818 - college-recommender - INFO - 数据库包含年份: 2025
+2025-11-22 22:23:55,429 - fastapi - WARNING - email-validator not installed, email fields will be treated as str.
+To install, run: pip install email-validator
+2025-11-22 22:24:30,079 - college-recommender - INFO - 收到策略推荐请求: {'score': 750, 'rank': 1, 'province': '广东', 'exam_type': '物理类', 'top_n': 15}
+2025-11-22 22:24:30,079 - college-recommender - ERROR - 策略推荐处理失败: 'CollegeRecommender' object has no attribute 'get_recommendations_for_single_year'
+2025-11-22 22:24:30,079 - college-recommender - ERROR - 详细错误信息:
+Traceback (most recent call last):
+  File "E:\Study\college-recommender\main.py", line 370, in recommend_strategy
+    strategies_result = app.state.recommender.get_recommendations_for_single_year(
+AttributeError: 'CollegeRecommender' object has no attribute 'get_recommendations_for_single_year'
+2025-11-22 22:24:52,398 - college-recommender - INFO - 收到策略推荐请求: {'score': 650, 'rank': 8000, 'province': '广东', 'exam_type': '物理类', 'top_n': 15}
+2025-11-22 22:24:52,398 - college-recommender - ERROR - 策略推荐处理失败: 'CollegeRecommender' object has no attribute 'get_recommendations_for_single_year'
+2025-11-22 22:24:52,398 - college-recommender - ERROR - 详细错误信息:
+Traceback (most recent call last):
+  File "E:\Study\college-recommender\main.py", line 370, in recommend_strategy
+    strategies_result = app.state.recommender.get_recommendations_for_single_year(
+AttributeError: 'CollegeRecommender' object has no attribute 'get_recommendations_for_single_year'
+2025-11-22 22:35:18,406 - college-recommender - INFO - 应用正在关闭...
+2025-11-22 22:35:18,406 - college-recommender - INFO - 数据库连接已关闭
+2025-11-22 23:23:31,402 - college-recommender - INFO - 正在初始化推荐系统，数据库路径: data/admissions.db
+2025-11-22 23:23:31,456 - college-recommender - INFO - 推荐系统初始化成功
+2025-11-22 23:23:31,462 - college-recommender - INFO - 启动配置 - HOST: 0.0.0.0, PORT: 8000, RELOAD: False, WORKERS: 1
+2025-11-22 23:23:31,493 - college-recommender - INFO - 正在初始化推荐系统，数据库路径: data/admissions.db
+2025-11-22 23:23:31,578 - college-recommender - INFO - 推荐系统初始化成功
+2025-11-22 23:23:31,583 - college-recommender - INFO - 应用启动中...
+2025-11-22 23:23:31,583 - college-recommender - INFO - Uvicorn 版本: 0.33.0
+2025-11-22 23:23:31,583 - college-recommender - INFO - SQLite3 版本: 3.35.5
+2025-11-22 23:23:31,584 - college-recommender - INFO - 数据库预热完成，总记录数: 13990
+2025-11-22 23:23:34,201 - fastapi - WARNING - email-validator not installed, email fields will be treated as str.
+To install, run: pip install email-validator
+2025-11-22 23:23:52,433 - college-recommender - INFO - 收到学校查询请求: {'school_name': 'string', 'province': '广东', 'exam_type': '物理类'}
+2025-11-22 23:23:52,433 - college-recommender - INFO - 学校查询完成: string
+2025-11-22 23:24:03,600 - college-recommender - INFO - 收到学校查询请求: {'school_name': '清华大学', 'province': '广东', 'exam_type': '物理类'}
+2025-11-22 23:24:03,601 - college-recommender - INFO - 学校查询完成: 清华大学
+2025-11-22 23:27:20,367 - college-recommender - INFO - 收到学校查询请求: {'school_name': '北京大学', 'province': '广东', 'exam_type': '物理类'}
+2025-11-22 23:27:20,367 - college-recommender - INFO - 学校查询完成: 北京大学
+2025-11-22 23:27:55,033 - college-recommender - INFO - 收到策略推荐请求: {'score': 600, 'rank': 13000, 'province': '广东', 'exam_type': '物理类', 'top_n': 15}
+2025-11-22 23:27:55,040 - college-recommender - INFO - 策略推荐成功完成，耗时: 0.009s，总计: 9 所院校
+2025-11-22 23:33:21,948 - college-recommender - INFO - 应用正在关闭...
+2025-11-22 23:33:21,948 - college-recommender - INFO - 数据库连接已关闭

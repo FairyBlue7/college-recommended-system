@@ -1,0 +1,240 @@
+<!-- templates/admin.html -->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>管理后台 - 用户管理</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Segoe UI", "Microsoft YaHei", sans-serif;
+        }
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            overflow: hidden;
+        }
+        header {
+            background: linear-gradient(135deg, #4a6cf7, #6d5dfc);
+            color: white;
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        header h1 {
+            font-size: 24px;
+            font-weight: 600;
+        }
+        .user-info {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            margin-left: 16px;
+            padding: 6px 12px;
+            border-radius: 4px;
+            background: rgba(255,255,255,0.2);
+            transition: background 0.2s;
+        }
+        .nav-links a:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .content {
+            padding: 24px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 16px;
+        }
+        th, td {
+            padding: 14px 16px;
+            text-align: left;
+            border-bottom: 1px solid #eaeef5;
+        }
+        th {
+            background-color: #f9fafb;
+            color: #555;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        tr:hover {
+            background-color: #fcfdff;
+        }
+        .current-user {
+            background-color: #eef7ff !important;
+        }
+        .role-admin {
+            color: #2e7d32;
+            font-weight: bold;
+        }
+        .role-user {
+            color: #555;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 6px 12px;
+            margin: 0 4px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        .btn-delete {
+            background-color: #ffebee;
+            color: #c62828;
+            border: 1px solid #ffcdd2;
+        }
+        .btn-delete:hover {
+            background-color: #ffcdd2;
+        }
+        .btn-promote {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+            border: 1px solid #c8e6c9;
+        }
+        .btn-promote:hover {
+            background-color: #c8e6c9;
+        }
+        .btn-demote {
+            background-color: #fff8e1;
+            color: #f57f17;
+            border: 1px solid #ffecb3;
+        }
+        .btn-demote:hover {
+            background-color: #ffecb3;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 0;
+            color: #888;
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: #888;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>高考志愿推荐系统 · 管理后台</h1>
+            <div class="user-info">
+                当前管理员：<strong>{{ session.username }}</strong>
+                <div class="nav-links">
+                    <a href="{{ url_for('recommend_page') }}">返回推荐页</a>
+                    <a href="{{ url_for('logout') }}">退出登录</a>
+                </div>
+            </div>
+        </header>
+
+        <div class="content">
+            <h2>用户管理</h2>
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div style="margin: 12px 0; padding: 10px; background: {% if category == 'error' %}#ffebee{% else %}#e8f5e8{% endif %}; color: {% if category == 'error' %}#c62828{% else %}#2e7d32{% endif %}; border-radius: 6px;">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            {% if users %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>用户名</th>
+                        <th>邮箱</th>
+                        <th>角色</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                    <tr {% if user[0] == session.user_id %}class="current-user"{% endif %}>
+                        <td>{{ user[0] }}</td>
+                        <td>{{ user[1] }}</td>
+                        <td>{{ user[2] }}</td>
+                        <td>
+                            {% if user[3] == 'admin' %}
+                                <span class="role-admin">管理员</span>
+                            {% else %}
+                                <span class="role-user">普通用户</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if user[0] != session.user_id and user[3] != 'admin' %}
+                                <a href="{{ url_for('delete_user', user_id=user[0]) }}"
+                                   class="btn btn-delete"
+                                   onclick="return confirm('确定删除用户 {{ user[1] }} 吗？此操作不可恢复。')">
+                                    删除
+                                </a>
+                                <a href="{{ url_for('toggle_admin', user_id=user[0], action='promote') }}"
+                                   class="btn btn-promote">
+                                    设为管理员
+                                </a>
+                            {% elif user[3] == 'admin' and user[0] != session.user_id %}
+                                <a href="{{ url_for('toggle_admin', user_id=user[0], action='demote') }}"
+                                   class="btn btn-demote">
+                                    取消管理员
+                                </a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="empty-state">
+                <p>暂无用户数据</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <footer>
+            © 2025 高考志愿推荐系统 · 管理后台
+        </footer>
+    </div>
+
+    <script>
+        // 可选：添加轻量级交互提示
+        document.querySelectorAll('.btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                const href = this.getAttribute('href');
+                if (!href || href.startsWith('#')) return;
+                if (this.classList.contains('btn-delete')) {
+                    if (!confirm('⚠️ 此操作将永久删除用户，确认继续？')) {
+                        e.preventDefault();
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
