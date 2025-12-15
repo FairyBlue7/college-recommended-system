@@ -503,14 +503,22 @@
                         
                         const actions = document.createElement('div');
                         actions.className = 'item-actions';
-                        actions.innerHTML = `
-                            <button onclick="editItem(${item.id})" title="编辑">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button class="delete-btn" onclick="deleteItem(${item.id})" title="删除">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        `;
+                        
+                        // Create edit button with event listener (safer than onclick)
+                        const editBtn = document.createElement('button');
+                        editBtn.title = '编辑';
+                        editBtn.innerHTML = '<i class="fas fa-edit"></i>';
+                        editBtn.addEventListener('click', () => editItem(item.id));
+                        
+                        // Create delete button with event listener
+                        const deleteBtn = document.createElement('button');
+                        deleteBtn.className = 'delete-btn';
+                        deleteBtn.title = '删除';
+                        deleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
+                        deleteBtn.addEventListener('click', () => deleteItem(item.id));
+                        
+                        actions.appendChild(editBtn);
+                        actions.appendChild(deleteBtn);
                         
                         header.appendChild(number);
                         header.appendChild(actions);

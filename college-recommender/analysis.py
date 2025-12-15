@@ -7,11 +7,18 @@
 import sqlite3
 from typing import List, Dict, Optional, Tuple
 import statistics
+import os
+
+# 常量定义
+DB_PATH = os.path.join(os.path.dirname(__file__), 'data', 'admissions.db')
+TREND_THRESHOLD = 100  # 趋势判断阈值（位次变化）
+VOLATILITY_LOW_THRESHOLD = 300  # 低波动阈值
+VOLATILITY_HIGH_THRESHOLD = 800  # 高波动阈值
 
 
 def get_db_connection():
     """获取数据库连接"""
-    conn = sqlite3.connect('data/admissions.db')
+    conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     return conn
 
@@ -88,9 +95,9 @@ def calculate_trend(data_list: List[Dict]) -> Tuple[str, str]:
     slope = numerator / denominator
     
     # 判断趋势（位次变小=slope<0，表示竞争加剧）
-    if slope < -100:  # 每年下降超过100位
+    if slope < -TREND_THRESHOLD:  # 每年下降超过阈值
         return "上升", f"近{n}年位次持续上升，竞争加剧"
-    elif slope > 100:  # 每年上升超过100位
+    elif slope > TREND_THRESHOLD:  # 每年上升超过阈值
         return "下降", f"近{n}年位次持续下降，竞争降低"
     else:
         return "稳定", f"近{n}年位次相对稳定，波动不大"
@@ -201,9 +208,9 @@ def get_volatility_level(volatility: float) -> str:
     Returns:
         波动等级：低 / 中 / 高
     """
-    if volatility < 300:
+    if volatility < VOLATILITY_LOW_THRESHOLD:
         return "低"
-    elif volatility < 800:
+    elif volatility < VOLATILITY_HIGH_THRESHOLD:
         return "中"
     else:
         return "高"

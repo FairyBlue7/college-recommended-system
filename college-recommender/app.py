@@ -890,6 +890,8 @@ def update_favorite(fav_id):
     cursor = conn.cursor()
     
     # Use predefined update statements for security
+    # This prevents SQL injection by avoiding dynamic query construction
+    # Each possible update scenario uses a fixed SQL statement with parameters
     if category and note is not None:
         # Update both fields
         if category not in ['冲', '稳', '保']:
