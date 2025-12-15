@@ -99,6 +99,7 @@
             font-weight: 500;
             transition: all 0.2s;
             cursor: pointer;
+            border: none;
         }
         .btn-delete {
             background-color: #ffebee;
@@ -190,20 +191,16 @@
                         </td>
                         <td>
                             {% if user[0] != session.user_id and user[3] != 'admin' %}
-                                <a href="{{ url_for('delete_user', user_id=user[0]) }}"
-                                   class="btn btn-delete"
-                                   onclick="return confirm('确定删除用户 {{ user[1] }} 吗？此操作不可恢复。')">
-                                    删除
-                                </a>
-                                <a href="{{ url_for('toggle_admin', user_id=user[0], action='promote') }}"
-                                   class="btn btn-promote">
-                                    设为管理员
-                                </a>
+                                <form method="POST" action="{{ url_for('delete_user', user_id=user[0]) }}" style="display:inline;" onsubmit="return confirm('确定删除用户 {{ user[1] }} 吗？此操作不可恢复。')">
+                                    <button type="submit" class="btn btn-delete">删除</button>
+                                </form>
+                                <form method="POST" action="{{ url_for('toggle_admin', user_id=user[0], action='promote') }}" style="display:inline;">
+                                    <button type="submit" class="btn btn-promote">设为管理员</button>
+                                </form>
                             {% elif user[3] == 'admin' and user[0] != session.user_id %}
-                                <a href="{{ url_for('toggle_admin', user_id=user[0], action='demote') }}"
-                                   class="btn btn-demote">
-                                    取消管理员
-                                </a>
+                                <form method="POST" action="{{ url_for('toggle_admin', user_id=user[0], action='demote') }}" style="display:inline;">
+                                    <button type="submit" class="btn btn-demote">取消管理员</button>
+                                </form>
                             {% endif %}
                         </td>
                     </tr>
@@ -222,19 +219,6 @@
         </footer>
     </div>
 
-    <script>
-        // 可选：添加轻量级交互提示
-        document.querySelectorAll('.btn').forEach(btn => {
-            btn.addEventListener('click', function(e) {
-                const href = this.getAttribute('href');
-                if (!href || href.startsWith('#')) return;
-                if (this.classList.contains('btn-delete')) {
-                    if (!confirm('⚠️ 此操作将永久删除用户，确认继续？')) {
-                        e.preventDefault();
-                    }
-                }
-            });
-        });
-    </script>
+
 </body>
 </html>

@@ -51,7 +51,9 @@
                     {% if ann['expire_time'] %}过期{% endif %}
                 </td>
                 <td>
-                    <a href="/admin/delete-announcement/{{ ann['id'] }}" class="btn btn-danger btn-sm">删除</a>
+                    <form method="POST" action="/admin/delete-announcement/{{ ann['id'] }}" style="display:inline;" onsubmit="return confirm('确定删除公告 {{ ann[\"title\"] }} 吗？')">
+                        <button type="submit" class="btn btn-danger btn-sm">删除</button>
+                    </form>
                 </td>
             </tr>
             {% endfor %}
