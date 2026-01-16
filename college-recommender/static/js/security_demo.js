@@ -34,6 +34,9 @@ function updateSQLPreview(usernameValue, passwordValue) {
 }
 
 // 高亮 SQL 关键词
+// 注意：此函数仅用于显示目的，所有内容都经过 escapeHTML 转义后才插入 DOM
+// 输入来源：用户在输入框中的内容 -> 通过 textContent 提取 -> escapeHTML 转义 -> 添加样式 -> innerHTML
+// 安全保证：所有用户输入都经过 escapeHTML() 函数转义，防止 XSS
 function highlightSQLKeywords(element) {
     const text = element.textContent;
     
@@ -58,20 +61,21 @@ function highlightSQLKeywords(element) {
     // 按位置排序
     matches.sort((a, b) => a.start - b.start);
     
-    // 构建高亮HTML（安全方式）
+    // 构建高亮HTML（安全方式 - 所有内容都经过 escapeHTML 转义）
     matches.forEach(match => {
         if (match.start >= currentPos) {
-            // 添加关键词之前的普通文本
+            // 添加关键词之前的普通文本（已转义）
             highlightedHTML += escapeHTML(text.substring(currentPos, match.start));
-            // 添加高亮的关键词
+            // 添加高亮的关键词（已转义）
             highlightedHTML += `<span style="color: #ff79c6; font-weight: bold;">${escapeHTML(match.text)}</span>`;
             currentPos = match.end;
         }
     });
     
-    // 添加剩余文本
+    // 添加剩余文本（已转义）
     highlightedHTML += escapeHTML(text.substring(currentPos));
     
+    // 安全：所有内容都已转义，可以安全使用 innerHTML
     element.innerHTML = highlightedHTML;
 }
 
@@ -229,22 +233,55 @@ function visualizeAttackResult(successful) {
     resultDiv.className = successful ? 'feedback-success' : 'feedback-error';
     
     if (successful) {
-        resultDiv.innerHTML = `
-            <h3><i class="fas fa-unlock"></i> 攻击成功！</h3>
-            <p>SQL 注入成功绕过了身份验证。这展示了漏洞代码的危险性。</p>
-            <p><strong>在真实场景中，这可能导致：</strong></p>
-            <ul>
-                <li>未授权访问系统</li>
-                <li>窃取敏感数据</li>
-                <li>篡改数据库内容</li>
-            </ul>
-        `;
+        // 创建标题
+        const title = document.createElement('h3');
+        const icon = document.createElement('i');
+        icon.className = 'fas fa-unlock';
+        title.appendChild(icon);
+        title.appendChild(document.createTextNode(' 攻击成功！'));
+        resultDiv.appendChild(title);
+        
+        // 创建描述段落
+        const desc = document.createElement('p');
+        desc.textContent = 'SQL 注入成功绕过了身份验证。这展示了漏洞代码的危险性。';
+        resultDiv.appendChild(desc);
+        
+        // 创建后果说明
+        const consequences = document.createElement('p');
+        const strong = document.createElement('strong');
+        strong.textContent = '在真实场景中，这可能导致：';
+        consequences.appendChild(strong);
+        resultDiv.appendChild(consequences);
+        
+        // 创建列表
+        const list = document.createElement('ul');
+        ['未授权访问系统', '窃取敏感数据', '篡改数据库内容'].forEach(text => {
+            const li = document.createElement('li');
+            li.textContent = text;
+            list.appendChild(li);
+        });
+        resultDiv.appendChild(list);
     } else {
-        resultDiv.innerHTML = `
-            <h3><i class="fas fa-shield-alt"></i> 安全代码拦截了攻击！</h3>
-            <p>参数化查询成功防御了 SQL 注入尝试。</p>
-            <p><strong>防护原因：</strong>用户输入被作为数据处理，而不是 SQL 代码。</p>
-        `;
+        // 创建标题
+        const title = document.createElement('h3');
+        const icon = document.createElement('i');
+        icon.className = 'fas fa-shield-alt';
+        title.appendChild(icon);
+        title.appendChild(document.createTextNode(' 安全代码拦截了攻击！'));
+        resultDiv.appendChild(title);
+        
+        // 创建描述段落
+        const desc = document.createElement('p');
+        desc.textContent = '参数化查询成功防御了 SQL 注入尝试。';
+        resultDiv.appendChild(desc);
+        
+        // 创建防护原因
+        const reason = document.createElement('p');
+        const strong = document.createElement('strong');
+        strong.textContent = '防护原因：';
+        reason.appendChild(strong);
+        reason.appendChild(document.createTextNode('用户输入被作为数据处理，而不是 SQL 代码。'));
+        resultDiv.appendChild(reason);
     }
     
     resultContainer.appendChild(resultDiv);
