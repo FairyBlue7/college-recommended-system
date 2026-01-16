@@ -425,7 +425,8 @@ def vulnerable_login():
             if user:
                 session['user_id'] = user['id']
                 session['username'] = user['username']
-                session['role'] = user.get('role') or 'user'  # 安全获取 role，避免 NULL 问题
+                # SQLite Row 对象通过键访问，如果 role 为 NULL 则使用默认值
+                session['role'] = user['role'] if user['role'] else 'user'
                 flash('登录成功！（漏洞演示）', 'success')
                 return redirect(url_for('recommend_page'))
             else:

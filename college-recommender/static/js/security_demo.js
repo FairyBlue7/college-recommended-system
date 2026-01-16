@@ -102,7 +102,7 @@ function showFeedback(message, type = 'success') {
     const messageText = document.createTextNode(' ' + message);
     feedbackDiv.appendChild(messageText);
     
-    feedbackContainer.innerHTML = '';
+    feedbackContainer.textContent = '';  // 安全清空容器
     feedbackContainer.appendChild(feedbackDiv);
     
     // 3秒后自动消失
@@ -227,7 +227,7 @@ function visualizeAttackResult(successful) {
     const resultContainer = document.getElementById('attackResultContainer');
     if (!resultContainer) return;
     
-    resultContainer.innerHTML = '';
+    resultContainer.textContent = '';  // 安全清空容器
     
     const resultDiv = document.createElement('div');
     resultDiv.className = successful ? 'feedback-success' : 'feedback-error';
@@ -329,7 +329,7 @@ function displayCodeAnalysis(code) {
     
     if (!analysisContainer) return;
     
-    analysisContainer.innerHTML = '';
+    analysisContainer.textContent = '';  // 安全清空容器
     
     const resultDiv = document.createElement('div');
     resultDiv.className = analysis.safe ? 'feedback-success' : 'feedback-error';
