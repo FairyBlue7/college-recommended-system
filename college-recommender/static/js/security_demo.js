@@ -297,25 +297,43 @@ function displayCodeAnalysis(code) {
     const resultDiv = document.createElement('div');
     resultDiv.className = analysis.safe ? 'feedback-success' : 'feedback-error';
     
-    let html = `<h4>${analysis.safe ? '✅ 代码安全' : '❌ 发现安全问题'}</h4>`;
+    // 安全创建标题
+    const title = document.createElement('h4');
+    title.textContent = analysis.safe ? '✅ 代码安全' : '❌ 发现安全问题';
+    resultDiv.appendChild(title);
     
     if (analysis.warnings.length > 0) {
-        html += '<div><strong>安全警告：</strong><ul>';
+        const warningDiv = document.createElement('div');
+        const warningTitle = document.createElement('strong');
+        warningTitle.textContent = '安全警告：';
+        warningDiv.appendChild(warningTitle);
+        
+        const warningList = document.createElement('ul');
         analysis.warnings.forEach(warning => {
-            html += `<li>${warning}</li>`;
+            const li = document.createElement('li');
+            li.textContent = warning;
+            warningList.appendChild(li);
         });
-        html += '</ul></div>';
+        warningDiv.appendChild(warningList);
+        resultDiv.appendChild(warningDiv);
     }
     
     if (analysis.suggestions.length > 0) {
-        html += '<div><strong>建议：</strong><ul>';
+        const suggestionDiv = document.createElement('div');
+        const suggestionTitle = document.createElement('strong');
+        suggestionTitle.textContent = '建议：';
+        suggestionDiv.appendChild(suggestionTitle);
+        
+        const suggestionList = document.createElement('ul');
         analysis.suggestions.forEach(suggestion => {
-            html += `<li>${suggestion}</li>`;
+            const li = document.createElement('li');
+            li.textContent = suggestion;
+            suggestionList.appendChild(li);
         });
-        html += '</ul></div>';
+        suggestionDiv.appendChild(suggestionList);
+        resultDiv.appendChild(suggestionDiv);
     }
     
-    resultDiv.innerHTML = html;
     analysisContainer.appendChild(resultDiv);
 }
 
