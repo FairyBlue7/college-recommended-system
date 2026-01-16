@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SQL 注入安全演示 - 交互式教学</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 2rem;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        .card h2 {
+            color: #2c3e50;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .warning-box {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ff8e53 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+        }
+        
+        .warning-box h3 {
+            margin: 0 0 0.5rem 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .code-comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin: 1.5rem 0;
+        }
+        
+        .code-block {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 1.5rem;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            overflow-x: auto;
+            position: relative;
+        }
+        
+        .code-block-header {
+            font-weight: bold;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .code-block.vulnerable {
+            border-left: 4px solid #ff6b6b;
+        }
+        
+        .code-block.vulnerable .code-block-header {
+            color: #ff6b6b;
+        }
+        
+        .code-block.safe {
+            border-left: 4px solid #51cf66;
+        }
+        
+        .code-block.safe .code-block-header {
+            color: #51cf66;
+        }
+        
+        .comment {
+            color: #6272a4;
+        }
+        
+        .keyword {
+            color: #ff79c6;
+        }
+        
+        .string {
+            color: #f1fa8c;
+        }
+        
+        .function {
+            color: #50fa7b;
+        }
+        
+        .interactive-demo {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+        }
+        
+        .input-demo {
+            margin: 1rem 0;
+        }
+        
+        .input-demo label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .input-demo input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 1rem;
+            box-sizing: border-box;
+        }
+        
+        .input-demo input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .payload-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin: 1rem 0;
+        }
+        
+        .payload-btn {
+            padding: 0.5rem 1rem;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.3s;
+        }
+        
+        .payload-btn:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+        }
+        
+        .sql-preview {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 1rem;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            margin-top: 1rem;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        
+        .sql-preview-label {
+            color: #50fa7b;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+        
+        .attack-scenarios {
+            display: grid;
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+        
+        .scenario {
+            background: #f8f9fa;
+            padding: 1.25rem;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .scenario h4 {
+            margin: 0 0 0.75rem 0;
+            color: #2c3e50;
+        }
+        
+        .scenario code {
+            background: #2d2d2d;
+            color: #f1fa8c;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .protection-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .protection-list li {
+            padding: 0.75rem;
+            margin: 0.5rem 0;
+            background: #e7f5ff;
+            border-radius: 8px;
+            border-left: 4px solid #1c7ed6;
+        }
+        
+        .protection-list li::before {
+            content: '✓';
+            color: #1c7ed6;
+            font-weight: bold;
+            margin-right: 0.5rem;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-top: 2rem;
+        }
+        
+        .btn {
+            padding: 0.875rem 1.5rem;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ff8e53 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.5);
+        }
+        
+        .btn-secondary {
+            background: #51cf66;
+            color: white;
+            box-shadow: 0 4px 15px rgba(81, 207, 102, 0.3);
+        }
+        
+        .btn-secondary:hover {
+            background: #40c057;
+            transform: translateY(-2px);
+        }
+        
+        .btn-info {
+            background: #17a2b8;
+            color: white;
+        }
+        
+        .btn-info:hover {
+            background: #138496;
+            transform: translateY(-2px);
+        }
+        
+        @media (max-width: 768px) {
+            .code-comparison {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .container {
+                padding: 1rem;
+            }
+            
+            .card {
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-shield-alt"></i> SQL 注入安全演示</h1>
+            <p>交互式安全教学 - 理解威胁，掌握防护</p>
+        </div>
+        
+        <div class="warning-box">
+            <h3><i class="fas fa-exclamation-triangle"></i> 重要声明</h3>
+            <p>本演示包含故意设计的安全漏洞，仅用于教育目的。请勿在生产环境中使用这些不安全的代码示例。</p>
+        </div>
+        
+        <div class="card">
+            <h2><i class="fas fa-question-circle"></i> 什么是 SQL 注入？</h2>
+            <p>SQL 注入（SQL Injection）是一种常见的 Web 安全漏洞，攻击者通过在输入字段中插入恶意的 SQL 代码片段，从而操纵后端数据库查询，达到未授权访问、数据泄露或数据篡改的目的。</p>
+            <p><strong>危害程度：</strong> 🔴 严重 - 可能导致整个数据库被窃取或破坏</p>
+        </div>
+        
+        <div class="card">
+            <h2><i class="fas fa-code"></i> 漏洞代码 vs 安全代码对比</h2>
+            <div class="code-comparison">
+                <div class="code-block vulnerable">
+                    <div class="code-block-header">❌ 危险代码（存在 SQL 注入）</div>
+                    <span class="comment"># 直接拼接用户输入到 SQL 语句</span><br>
+                    username = request.form[<span class="string">'username'</span>]<br>
+                    password = request.form[<span class="string">'password'</span>]<br>
+                    <br>
+                    <span class="comment"># ⚠️ 漏洞点：字符串拼接</span><br>
+                    query = <span class="string">f"SELECT * FROM users WHERE username = '{username}' AND password = '{password}'"</span><br>
+                    <br>
+                    cursor.<span class="function">execute</span>(query)
+                </div>
+                
+                <div class="code-block safe">
+                    <div class="code-block-header">✅ 安全代码（参数化查询）</div>
+                    <span class="comment"># 使用参数化查询</span><br>
+                    username = request.form[<span class="string">'username'</span>]<br>
+                    password = request.form[<span class="string">'password'</span>]<br>
+                    <br>
+                    <span class="comment"># ✓ 安全：使用占位符</span><br>
+                    query = <span class="string">"SELECT * FROM users WHERE username = ? AND password = ?"</span><br>
+                    <br>
+                    cursor.<span class="function">execute</span>(query, (username, password))
+                </div>
+            </div>
+            <p><strong>关键区别：</strong> 参数化查询将用户输入作为数据处理，而不是 SQL 代码的一部分，从根本上杜绝了 SQL 注入的可能性。</p>
+        </div>
+        
+        <div class="card">
+            <h2><i class="fas fa-flask"></i> 交互式演示</h2>
+            <div class="interactive-demo">
+                <h3>实时 SQL 查询构建器</h3>
+                <p>在下方输入框中输入内容，观察如何构建出危险的 SQL 查询：</p>
+                
+                <div class="input-demo">
+                    <label>用户名输入：</label>
+                    <input type="text" id="usernameInput" placeholder="例如：admin' OR '1'='1' --" oninput="updateSQL()">
+                </div>
+                
+                <div class="input-demo">
+                    <label>密码输入：</label>
+                    <input type="text" id="passwordInput" placeholder="任意内容" oninput="updateSQL()">
+                </div>
+                
+                <div class="payload-buttons">
+                    <button class="payload-btn" onclick="setPayload('admin\' OR \'1\'=\'1\' --', '')">
+                        <i class="fas fa-bolt"></i> 绕过认证
+                    </button>
+                    <button class="payload-btn" onclick="setPayload('\' OR 1=1 --', '')">
+                        <i class="fas fa-key"></i> 永真条件
+                    </button>
+                    <button class="payload-btn" onclick="setPayload('\' UNION SELECT id, username, email, password_hash, role FROM users --', '')">
+                        <i class="fas fa-database"></i> 联合查询
+                    </button>
+                    <button class="payload-btn" onclick="setPayload('\' UNION SELECT id, flag_name, flag_value, hint, \'user\' FROM hidden_flags --', '')">
+                        <i class="fas fa-flag"></i> CTF 挑战
+                    </button>
+                </div>
+                
+                <div class="sql-preview">
+                    <span class="sql-preview-label">生成的 SQL 查询：</span>
+                    <div id="sqlOutput">SELECT * FROM users WHERE username = '' AND password_hash = ''</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2><i class="fas fa-crosshairs"></i> 常见攻击场景</h2>
+            <div class="attack-scenarios">
+                <div class="scenario">
+                    <h4>场景 1：绕过身份验证</h4>
+                    <p><strong>Payload：</strong> <code>admin' OR '1'='1' --</code></p>
+                    <p><strong>原理：</strong> 通过注入 <code>OR '1'='1'</code> 创建一个永真条件，<code>--</code> 注释掉后续的密码检查，从而直接以第一个用户（通常是管理员）身份登录。</p>
+                </div>
+                
+                <div class="scenario">
+                    <h4>场景 2：联合查询注入</h4>
+                    <p><strong>Payload：</strong> <code>' UNION SELECT id, username, email, password_hash, role FROM users --</code></p>
+                    <p><strong>原理：</strong> 使用 UNION 操作符合并两个查询结果，从而获取数据库中所有用户的敏感信息，包括密码哈希值。</p>
+                </div>
+                
+                <div class="scenario">
+                    <h4>场景 3：盲注攻击</h4>
+                    <p><strong>Payload：</strong> <code>' OR (SELECT COUNT(*) FROM users) > 0 --</code></p>
+                    <p><strong>原理：</strong> 当无法直接看到查询结果时，通过观察应用的响应差异（如登录成功/失败、页面加载时间）来推断数据库信息。</p>
+                </div>
+                
+                <div class="scenario">
+                    <h4>场景 4：CTF 夺旗挑战 🚩</h4>
+                    <p><strong>目标：</strong> 数据库中隐藏着一个特殊的 <code>hidden_flags</code> 表，找到其中的 flag！</p>
+                    <p><strong>提示：</strong> 使用 UNION SELECT 查询 hidden_flags 表的内容...</p>
+                    <p><strong>Payload：</strong> <code>' UNION SELECT id, flag_name, flag_value, hint, 'user' FROM hidden_flags --</code></p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2><i class="fas fa-shield-alt"></i> 防护措施</h2>
+            <ul class="protection-list">
+                <li>
+                    <strong>使用参数化查询/预编译语句</strong><br>
+                    这是防止 SQL 注入的最有效方法，将用户输入作为参数传递，而不是拼接到 SQL 字符串中。
+                </li>
+                <li>
+                    <strong>输入验证和过滤</strong><br>
+                    验证用户输入的格式、长度和类型，拒绝包含特殊字符或不符合预期格式的输入。
+                </li>
+                <li>
+                    <strong>最小权限原则</strong><br>
+                    数据库账户只授予必要的权限，避免使用具有完全权限的账户连接数据库。
+                </li>
+                <li>
+                    <strong>错误信息处理</strong><br>
+                    不要向用户显示详细的数据库错误信息，这可能帮助攻击者了解数据库结构。
+                </li>
+                <li>
+                    <strong>使用 ORM 框架</strong><br>
+                    使用如 SQLAlchemy、Django ORM 等框架，它们通常会自动处理 SQL 注入防护。
+                </li>
+                <li>
+                    <strong>Web 应用防火墙 (WAF)</strong><br>
+                    部署 WAF 可以检测和阻止常见的 SQL 注入攻击模式。
+                </li>
+            </ul>
+        </div>
+        
+        <div class="card">
+            <h2><i class="fas fa-graduation-cap"></i> 开始实践</h2>
+            <p>现在你已经了解了 SQL 注入的原理和防护方法，是时候亲自尝试了！</p>
+            <div class="action-buttons">
+                <a href="{{ url_for('vulnerable_login') }}" class="btn btn-primary">
+                    <i class="fas fa-bug"></i> 尝试攻击漏洞页面
+                </a>
+                <a href="{{ url_for('login') }}" class="btn btn-secondary">
+                    <i class="fas fa-shield-alt"></i> 查看安全版本
+                </a>
+                <a href="https://github.com/FairyBlue7/college-recommended-system/blob/main/SECURITY_DEMO.md" target="_blank" class="btn btn-info">
+                    <i class="fas fa-book"></i> 阅读完整文档
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function updateSQL() {
+            const username = document.getElementById('usernameInput').value;
+            const password = document.getElementById('passwordInput').value;
+            const sqlOutput = document.getElementById('sqlOutput');
+            
+            const query = `SELECT * FROM users WHERE username = '${username}' AND password_hash = '${password}'`;
+            sqlOutput.textContent = query;
+            
+            // Highlight if it looks malicious
+            if (username.includes("'") || username.includes("--") || username.toUpperCase().includes("UNION") || 
+                password.includes("'") || password.includes("--")) {
+                sqlOutput.style.color = '#ff6b6b';
+            } else {
+                sqlOutput.style.color = '#f8f8f2';
+            }
+        }
+        
+        function setPayload(username, password) {
+            document.getElementById('usernameInput').value = username;
+            document.getElementById('passwordInput').value = password;
+            updateSQL();
+        }
+        
+        // Initialize
+        updateSQL();
+    </script>
+</body>
+</html>

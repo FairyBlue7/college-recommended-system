@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚠️ 漏洞演示登录 - SQL 注入演示</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            background: linear-gradient(135deg, #ff6b6b 0%, #ff8e53 50%, #feca57 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        body::before {
+            content: '';
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            background-image: 
+                radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+            animation: backgroundMove 20s ease-in-out infinite;
+        }
+        
+        @keyframes backgroundMove {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(-50px, -50px); }
+        }
+        
+        .login-container {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 520px;
+        }
+        
+        .warning-banner {
+            background: linear-gradient(135deg, #ff4757 0%, #ff6348 100%);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 15px 15px 0 0;
+            box-shadow: 0 4px 15px rgba(255, 71, 87, 0.4);
+            animation: pulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 4px 15px rgba(255, 71, 87, 0.4); }
+            50% { box-shadow: 0 4px 25px rgba(255, 71, 87, 0.7); }
+        }
+        
+        .warning-banner h3 {
+            margin: 0 0 0.5rem 0;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .warning-banner p {
+            margin: 0;
+            font-size: 0.9rem;
+            opacity: 0.95;
+        }
+        
+        .login-box {
+            background: white;
+            padding: 2rem;
+            border-radius: 0 0 20px 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+        
+        .logo {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .logo-icon {
+            font-size: 3rem;
+            color: #ff6b6b;
+            margin-bottom: 0.5rem;
+        }
+        
+        h2 {
+            text-align: center;
+            margin-bottom: 0.5rem;
+            color: #2c3e50;
+            font-size: 1.75rem;
+            font-weight: 700;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #ff6b6b;
+            font-size: 0.9rem;
+            margin-bottom: 2rem;
+            font-weight: 600;
+        }
+        
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+        
+        .input-group {
+            position: relative;
+        }
+        
+        .input-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #95a5a6;
+            font-size: 1.1rem;
+            transition: color 0.3s;
+        }
+        
+        input[type="text"], 
+        input[type="password"] {
+            width: 100%;
+            padding: 0.875rem 1rem 0.875rem 2.75rem;
+            border: 2px solid #e0e6ed;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: all 0.3s;
+            box-sizing: border-box;
+        }
+        
+        input[type="text"]:focus, 
+        input[type="password"]:focus {
+            outline: none;
+            border-color: #ff6b6b;
+            box-shadow: 0 0 0 4px rgba(255, 107, 107, 0.1);
+        }
+        
+        input[type="text"]:focus + .input-icon,
+        input[type="password"]:focus + .input-icon {
+            color: #ff6b6b;
+        }
+        
+        button[type="submit"] {
+            width: 100%;
+            padding: 0.875rem;
+            background: linear-gradient(135deg, #ff6b6b 0%, #ff8e53 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-top: 0.5rem;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
+        }
+        
+        button[type="submit"]:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.6);
+        }
+        
+        button[type="submit"]:active {
+            transform: translateY(0);
+        }
+        
+        .message {
+            padding: 0.75rem 1rem;
+            border-radius: 10px;
+            margin-bottom: 1.25rem;
+        }
+        
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border-left: 4px solid #28a745;
+        }
+        
+        .danger {
+            background-color: #fee;
+            color: #c33;
+            border-left: 4px solid #e74c3c;
+        }
+        
+        .attack-hints {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 12px;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .attack-hints h4 {
+            margin: 0 0 0.75rem 0;
+            color: #856404;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .hint-toggle {
+            background: #ffc107;
+            color: #856404;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            width: 100%;
+            transition: all 0.3s;
+        }
+        
+        .hint-toggle:hover {
+            background: #ffcd38;
+            transform: translateY(-1px);
+        }
+        
+        .hint-content {
+            display: none;
+            font-size: 0.85rem;
+            color: #856404;
+        }
+        
+        .hint-content.show {
+            display: block;
+        }
+        
+        .payload-item {
+            background: white;
+            padding: 0.5rem;
+            margin: 0.5rem 0;
+            border-radius: 6px;
+            border-left: 3px solid #ffc107;
+            font-family: monospace;
+            font-size: 0.85rem;
+            word-break: break-all;
+        }
+        
+        .payload-item strong {
+            color: #dc3545;
+        }
+        
+        .links {
+            margin-top: 1.5rem;
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+        
+        .link-button {
+            flex: 1;
+            min-width: 140px;
+            text-align: center;
+            padding: 0.75rem 1rem;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+        }
+        
+        .link-safe {
+            background: #28a745;
+            color: white;
+        }
+        
+        .link-safe:hover {
+            background: #218838;
+            transform: translateY(-2px);
+        }
+        
+        .link-demo {
+            background: #17a2b8;
+            color: white;
+        }
+        
+        .link-demo:hover {
+            background: #138496;
+            transform: translateY(-2px);
+        }
+        
+        @media (max-width: 480px) {
+            .login-box {
+                padding: 1.5rem;
+            }
+            
+            h2 {
+                font-size: 1.5rem;
+            }
+            
+            .logo-icon {
+                font-size: 2.5rem;
+            }
+            
+            .links {
+                flex-direction: column;
+            }
+            
+            .link-button {
+                min-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="warning-banner">
+            <h3>
+                <i class="fas fa-exclamation-triangle"></i>
+                ⚠️ 安全演示页面
+            </h3>
+            <p>此页面故意存在 SQL 注入漏洞，仅用于教学演示。请勿在生产环境中使用此代码！</p>
+        </div>
+        
+        <div class="login-box">
+            <div class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-bug"></i>
+                </div>
+            </div>
+            
+            <h2>漏洞登录演示</h2>
+            <p class="subtitle">尝试使用 SQL 注入绕过身份验证</p>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="message {{ category }}">
+                            <i class="fas fa-{% if category == 'success' %}check-circle{% else %}exclamation-circle{% endif %}"></i> {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <form method="POST">
+                <div class="form-group">
+                    <div class="input-group">
+                        <input type="text" name="username" placeholder="用户名" required autofocus>
+                        <i class="fas fa-user input-icon"></i>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <div class="input-group">
+                        <input type="password" name="password" placeholder="密码">
+                        <i class="fas fa-lock input-icon"></i>
+                    </div>
+                </div>
+                
+                <button type="submit">
+                    <i class="fas fa-sign-in-alt"></i> 尝试登录
+                </button>
+            </form>
+
+            <div class="attack-hints">
+                <button class="hint-toggle" onclick="toggleHints()">
+                    <i class="fas fa-lightbulb"></i> 点击查看攻击提示
+                </button>
+                <div class="hint-content" id="hintContent">
+                    <h4>
+                        <i class="fas fa-flask"></i>
+                        常见的 SQL 注入 Payload
+                    </h4>
+                    <div class="payload-item">
+                        <strong>场景 1：绕过身份验证</strong><br>
+                        用户名: <code>admin' OR '1'='1' --</code><br>
+                        密码: 任意内容
+                    </div>
+                    <div class="payload-item">
+                        <strong>场景 2：永真条件</strong><br>
+                        用户名: <code>' OR 1=1 --</code><br>
+                        密码: 任意内容
+                    </div>
+                    <div class="payload-item">
+                        <strong>场景 3：联合查询</strong><br>
+                        用户名: <code>' UNION SELECT id, username, email, password_hash, role FROM users --</code>
+                    </div>
+                    <div class="payload-item">
+                        <strong>CTF 挑战：寻找隐藏的 Flag</strong><br>
+                        提示：数据库中有一个 hidden_flags 表...<br>
+                        尝试: <code>' UNION SELECT id, flag_name, flag_value, hint, 'user' FROM hidden_flags --</code>
+                    </div>
+                    <p style="margin-top: 1rem; font-size: 0.8rem;">
+                        <i class="fas fa-info-circle"></i> 
+                        提示：SQL 注释符 <code>--</code> 会注释掉后面的所有内容，包括密码检查。
+                    </p>
+                </div>
+            </div>
+
+            <div class="links">
+                <a href="{{ url_for('login') }}" class="link-button link-safe">
+                    <i class="fas fa-shield-alt"></i> 安全版本登录
+                </a>
+                <a href="{{ url_for('security_demo') }}" class="link-button link-demo">
+                    <i class="fas fa-book"></i> 安全教程
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleHints() {
+            const hintContent = document.getElementById('hintContent');
+            const button = document.querySelector('.hint-toggle');
+            
+            if (hintContent.classList.contains('show')) {
+                hintContent.classList.remove('show');
+                button.innerHTML = '<i class="fas fa-lightbulb"></i> 点击查看攻击提示';
+            } else {
+                hintContent.classList.add('show');
+                button.innerHTML = '<i class="fas fa-eye-slash"></i> 隐藏攻击提示';
+            }
+        }
+        
+        // 页面加载时显示确认对话框
+        window.addEventListener('DOMContentLoaded', function() {
+            const hasConfirmed = sessionStorage.getItem('vulnerableLoginConfirmed');
+            if (!hasConfirmed) {
+                const confirmed = confirm('⚠️ 警告：这是一个故意存在安全漏洞的演示页面！\n\n仅用于教学目的，请勿将类似代码用于生产环境。\n\n点击"确定"继续访问演示页面。');
+                if (confirmed) {
+                    sessionStorage.setItem('vulnerableLoginConfirmed', 'true');
+                } else {
+                    window.location.href = '{{ url_for("login") }}';
+                }
+            }
+        });
+    </script>
+</body>
+</html>
