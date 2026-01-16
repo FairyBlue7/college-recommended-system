@@ -179,6 +179,26 @@ def init_database():
             ('志愿填报指南更新', '新增2024年热门专业解读，<a href="/guide">点击查看</a>', 0)
         ''')
 
+    # 10. 创建隐藏的 flag 表（用于 CTF 挑战 - 安全演示）
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS hidden_flags (
+        id INTEGER PRIMARY KEY,
+        flag_name TEXT NOT NULL,
+        flag_value TEXT NOT NULL,
+        hint TEXT
+    )
+    ''')
+
+    # 插入挑战 flag
+    cursor.execute("SELECT COUNT(*) FROM hidden_flags")
+    if cursor.fetchone()[0] == 0:
+        cursor.execute('''
+            INSERT INTO hidden_flags (id, flag_name, flag_value, hint)
+            VALUES 
+                (1, 'sql_injection_master', 'FLAG{Y0u_F0und_Th3_S3cr3t_2026}', '提示：尝试使用 UNION SELECT 查询 hidden_flags 表'),
+                (2, 'blind_injection_expert', 'FLAG{T1m3_B4s3d_Bl1nd_1nj3ct10n}', '提示：这个需要盲注技巧')
+        ''')
+
     conn.commit()
     conn.close()
 
@@ -373,6 +393,60 @@ def login():
 def logout():
     session.clear()
     return redirect(url_for('login'))
+
+
+# ========================
+# ⚠️ 漏洞演示登录页面（仅用于教学演示）
+# ========================
+@app.route('/vulnerable_login', methods=['GET', 'POST'])
+def vulnerable_login():
+    """
+    ⚠️ 警告：此路由故意存在 SQL 注入漏洞，仅用于安全教学演示！
+    请勿在生产环境中使用此代码。
+    """
+    if request.method == 'POST':
+        username = request.form.get('username', '')
+        password = request.form.get('password', '')
+        
+        # ⚠️ 危险！直接拼接 SQL - 存在注入漏洞（仅用于演示）
+        # 注意：这里故意使用了简化的查询来演示 SQL 注入
+        # 真实场景中密码应该哈希比对，但 SQL 注入可以完全绕过密码检查
+        # 攻击者通过注入 ' OR '1'='1' -- 使整个 WHERE 条件永真，完全忽略密码验证
+        # 教学要点：即使密码存储为哈希值，SQL 注入在查询构造阶段就绕过了所有验证逻辑
+        query = f"SELECT * FROM users WHERE username = '{username}' AND password_hash = '{password}'"
+        
+        try:
+            conn = get_db_connection()
+            cursor = conn.cursor()
+            cursor.execute(query)  # 漏洞点：未使用参数化查询，使整个认证机制失效
+            user = cursor.fetchone()
+            conn.close()
+            
+            if user:
+                session['user_id'] = user['id']
+                session['username'] = user['username']
+                # SQLite Row 对象通过键访问，如果 role 为 NULL 则使用默认值
+                session['role'] = user['role'] if user['role'] else 'user'
+                flash('登录成功！（漏洞演示）', 'success')
+                return redirect(url_for('recommend_page'))
+            else:
+                flash('用户名或密码错误', 'danger')
+        except Exception as e:
+            # 显示详细错误信息（生产环境不应这样做）
+            flash(f'SQL 错误: {str(e)}', 'danger')
+    
+    return render_template('vulnerable_login.html')
+
+
+# ========================
+# 安全演示页面
+# ========================
+@app.route('/security_demo')
+def security_demo():
+    """
+    交互式安全演示页面，展示 SQL 注入原理和防护措施
+    """
+    return render_template('security_demo.html')
 
 
 # ========================
