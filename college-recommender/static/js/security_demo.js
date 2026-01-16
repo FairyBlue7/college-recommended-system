@@ -35,17 +35,78 @@ function updateSQLPreview(usernameValue, passwordValue) {
 
 // 高亮 SQL 关键词
 function highlightSQLKeywords(element) {
-    let text = element.textContent;
+    const text = element.textContent;
     
     // SQL 关键词列表
     const keywords = ['SELECT', 'FROM', 'WHERE', 'AND', 'OR', 'UNION', 'DROP', 'INSERT', 'UPDATE', 'DELETE'];
     
+    // 创建安全的高亮版本
+    let highlightedHTML = '';
+    let currentPos = 0;
+    const textUpper = text.toUpperCase();
+    
+    // 查找所有关键词位置
+    const matches = [];
     keywords.forEach(keyword => {
         const regex = new RegExp(`\\b${keyword}\\b`, 'gi');
-        text = text.replace(regex, `<span style="color: #ff79c6; font-weight: bold;">${keyword}</span>`);
+        let match;
+        while ((match = regex.exec(text)) !== null) {
+            matches.push({ start: match.index, end: match.index + keyword.length, text: match[0] });
+        }
     });
     
-    element.innerHTML = text;
+    // 按位置排序
+    matches.sort((a, b) => a.start - b.start);
+    
+    // 构建高亮HTML（安全方式）
+    matches.forEach(match => {
+        if (match.start >= currentPos) {
+            // 添加关键词之前的普通文本
+            highlightedHTML += escapeHTML(text.substring(currentPos, match.start));
+            // 添加高亮的关键词
+            highlightedHTML += `<span style="color: #ff79c6; font-weight: bold;">${escapeHTML(match.text)}</span>`;
+            currentPos = match.end;
+        }
+    });
+    
+    // 添加剩余文本
+    highlightedHTML += escapeHTML(text.substring(currentPos));
+    
+    element.innerHTML = highlightedHTML;
+}
+
+// HTML 转义函数（防止 XSS）
+function escapeHTML(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+}
+
+// 显示反馈消息
+function showFeedback(message, type = 'success') {
+    const feedbackContainer = document.getElementById('feedbackContainer');
+    if (!feedbackContainer) return;
+    
+    const feedbackDiv = document.createElement('div');
+    feedbackDiv.className = `feedback-${type}`;
+    
+    // 使用 textContent 防止 XSS
+    const icon = document.createElement('i');
+    icon.className = `fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}`;
+    feedbackDiv.appendChild(icon);
+    
+    const messageText = document.createTextNode(' ' + message);
+    feedbackDiv.appendChild(messageText);
+    
+    feedbackContainer.innerHTML = '';
+    feedbackContainer.appendChild(feedbackDiv);
+    
+    // 3秒后自动消失
+    setTimeout(() => {
+        feedbackDiv.style.opacity = '0';
+        feedbackDiv.style.transition = 'opacity 0.5s';
+        setTimeout(() => feedbackDiv.remove(), 500);
+    }, 3000);
 }
 
 // 设置 Payload（快捷按钮功能）
@@ -61,26 +122,6 @@ function setPayload(username, password) {
         // 添加视觉反馈
         showFeedback('Payload 已填充！尝试提交查看效果', 'success');
     }
-}
-
-// 显示反馈消息
-function showFeedback(message, type = 'success') {
-    const feedbackContainer = document.getElementById('feedbackContainer');
-    if (!feedbackContainer) return;
-    
-    const feedbackDiv = document.createElement('div');
-    feedbackDiv.className = `feedback-${type}`;
-    feedbackDiv.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i> ${message}`;
-    
-    feedbackContainer.innerHTML = '';
-    feedbackContainer.appendChild(feedbackDiv);
-    
-    // 3秒后自动消失
-    setTimeout(() => {
-        feedbackDiv.style.opacity = '0';
-        feedbackDiv.style.transition = 'opacity 0.5s';
-        setTimeout(() => feedbackDiv.remove(), 500);
-    }, 3000);
 }
 
 // 逐步提示系统

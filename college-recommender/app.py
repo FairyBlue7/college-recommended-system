@@ -412,12 +412,13 @@ def vulnerable_login():
         # 注意：这里故意使用了简化的查询来演示 SQL 注入
         # 真实场景中密码应该哈希比对，但 SQL 注入可以完全绕过密码检查
         # 攻击者通过注入 ' OR '1'='1' -- 使整个 WHERE 条件永真，完全忽略密码验证
+        # 教学要点：即使密码存储为哈希值，SQL 注入在查询构造阶段就绕过了所有验证逻辑
         query = f"SELECT * FROM users WHERE username = '{username}' AND password_hash = '{password}'"
         
         try:
             conn = get_db_connection()
             cursor = conn.cursor()
-            cursor.execute(query)  # 漏洞点：未使用参数化查询
+            cursor.execute(query)  # 漏洞点：未使用参数化查询，使整个认证机制失效
             user = cursor.fetchone()
             conn.close()
             
