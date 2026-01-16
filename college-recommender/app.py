@@ -409,6 +409,9 @@ def vulnerable_login():
         password = request.form.get('password', '')
         
         # ⚠️ 危险！直接拼接 SQL - 存在注入漏洞（仅用于演示）
+        # 注意：这里故意使用了简化的查询来演示 SQL 注入
+        # 真实场景中密码应该哈希比对，但 SQL 注入可以完全绕过密码检查
+        # 攻击者通过注入 ' OR '1'='1' -- 使整个 WHERE 条件永真，完全忽略密码验证
         query = f"SELECT * FROM users WHERE username = '{username}' AND password_hash = '{password}'"
         
         try:
